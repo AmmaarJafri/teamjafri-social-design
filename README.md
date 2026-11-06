@@ -28,7 +28,7 @@ node render.js <spec.json> --out <dir>
 - **Default `--out`:** `out/<spec name>/`.
 - **`<dir>` must be new, empty, or contain only `.jpg`/`.png` files.** Anything else is refused with exit 2.
 
-**License values never live in this repo.** Read the agent name, CalDRE # and CSLB # from the Brand Brief at render time and put them in the spec's `footer`.
+**License values never live in this repo.** At render time, read them from the Brand Brief and put them in the spec's `footer`: the agent name, CalDRE # and broker name for real estate; the licensed name and CSLB # for construction. Nothing in the footer is hardcoded.
 
 **Never pass `--draft` for anything that will be posted.** `--draft` lets placeholder license numbers through, stamps "DRAFT — NOT FOR POSTING" across the top of every slide, and names the files `DRAFT-01.jpg`, …. It exists only for the samples.
 
@@ -51,7 +51,7 @@ npm test
 | 0 | OK | Post the images. |
 | 1 | Internal error | Don't post. Report the stack trace. |
 | 2 | Invalid spec: bad JSON, unknown lane/layout/field, missing text, unsupported character (emoji, newline), bad args | Fix the spec. |
-| 3 | License footer missing, empty, placeholder, or wrong format | Don't post. Get the real values from the Brand Brief. |
+| 3 | License footer missing, empty, placeholder, wrong format, or a license number written as a JSON number instead of a quoted string | Don't post. Get the real values from the Brand Brief. |
 | 4 | Image path missing, unreadable, or not .jpg/.jpeg/.png/.webp; or a cover photo narrower than 1080 px (the message names the slide and the actual width) | Fix the path, or pick a larger photo. Never upscale the file to get past the check. |
 | 5 | Text overflows its box (the message names the slide and field) | Shorten that field. Never shrink fonts. |
 | 6 | Environment: Chrome missing or won't launch, a bundled font didn't load, network access attempted | Don't post. Report it. |
@@ -63,7 +63,7 @@ If several categories fail, the run exits with the code of the first one: 2, 3, 
 ```json
 {
   "lane": "real-estate",
-  "footer": { "agentName": "Asad Jafri", "dre": "01234567", "brokerage": "Simple Realty" },
+  "footer": { "agentName": "Dana Whitfield", "dre": "01928374", "brokerage": "Valley Oak Realty" },
   "slides": [
     { "layout": "cover", "image": "photos/house.jpg", "kicker": "Central Valley buyers", "headline": "..." },
     { "layout": "point", "stat": "3", "headline": "...", "body": "..." },
@@ -74,11 +74,11 @@ If several categories fail, the run exits with the code of the first one: 2, 3, 
 ```
 
 - **`lane`:** `"real-estate"` or `"construction"`.
-- **`footer`:**
-  - Real estate: `agentName`, `dre` (exactly 8 digits), `brokerage`.
-  - Construction: `{ "cslb": "1234567" }` (6–7 digits).
-  - The footer appears on every slide.
-  - Placeholders fail with exit 3: TBD, TODO, XXX, "Agent Name", `[...]`, 00000000, 12345678, and similar.
+- **`footer`:** every field is required and appears on every slide exactly as written.
+  - Real estate: `agentName`, `dre` (exactly 8 digits), `brokerage` (the broker name). Renders as `<agentName> · CalDRE #<dre> · <brokerage>`.
+  - Construction: `licensedName` (the name on the CSLB license), `cslb` (6–7 digits). Renders as `<licensedName> · CSLB #<cslb>`.
+  - **License numbers are strings in quotes:** `"dre": "01928374"`, never `"dre": 1928374`. The real DRE number starts with 0, and a JSON number would drop it, so a number fails with exit 3.
+  - Placeholders fail with exit 3: TBD, TODO, XXX, "Agent Name", "Broker Name", "Licensed Name", `[...]`, 00000000, 12345678, and similar.
 - **`slides`:** 1–10 slides. Image paths are relative to the spec file. Unknown fields are rejected.
 
 | Layout | Required | Optional | About how much fits |
@@ -101,7 +101,7 @@ If several categories fail, the run exits with the code of the first one: 2, 3, 
 - `src/validate.js`: checks the spec before rendering.
 - `src/render.js`: drives Chrome and checks what actually rendered.
 - `src/tokens.js` and `src/layouts/`: brand tokens and the 4 layouts. `src/layouts/index.js` holds the contract between the layouts and the renderer.
-- `assets/`: bundled fonts (OFL) and logos.
+- `assets/`: bundled fonts (OFL) and logos. Dark slides and photo covers use `logo-social-dark.png`, the site's dark logo without the "Building Dreams" tagline, which is unreadable on dark at slide size. Light slides keep `logo-full-light.png`.
 - `examples/`: the sample specs and photos.
 - `test/`: the tests.
 - `docker/` and `scripts/container-test.sh`: a fresh-clone, offline render test in a container that mirrors the Sunday machine (Debian 13, Node 20, system Chrome, non-root). Run it with:
