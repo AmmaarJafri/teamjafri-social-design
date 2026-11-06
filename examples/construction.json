@@ -1,0 +1,37 @@
+{
+  "lane": "construction",
+  "footer": { "cslb": "0000000" },
+  "slides": [
+    {
+      "layout": "cover",
+      "image": "photos/project-kitchen-refresh.jpg",
+      "kicker": "Remodels · ADUs",
+      "headline": "Your kitchen might not need a gut job"
+    },
+    {
+      "layout": "point",
+      "stat": "3",
+      "headline": "questions to answer before any remodel",
+      "body": "What has to change? What can stay? What will the permit require? Answer those three first and the scope, the schedule, and the budget get a lot easier to pin down."
+    },
+    {
+      "layout": "point",
+      "headline": "Keep the layout. Change everything you touch.",
+      "body": "Moving plumbing and walls is where budgets grow. New cabinets, counters, flooring, lighting, and paint can transform a room without relocating a single pipe."
+    },
+    {
+      "layout": "before-after",
+      "before": "photos/project-exterior-before.jpg",
+      "after": "photos/project-exterior-after.jpg",
+      "headline": "Fresh paint, sharp trim, and a porch worth walking up to.",
+      "beforeLabel": "Before",
+      "afterLabel": "After"
+    },
+    {
+      "layout": "cta",
+      "headline": "Planning a remodel or an ADU?",
+      "body": "Walk us through the space. We'll help you scope it before anyone swings a hammer.",
+      "action": "Book a project consult"
+    }
+  ]
+}

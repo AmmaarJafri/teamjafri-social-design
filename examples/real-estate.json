@@ -1,0 +1,36 @@
+{
+  "lane": "real-estate",
+  "footer": { "agentName": "AGENT NAME", "dre": "00000000", "brokerage": "Simple Realty" },
+  "slides": [
+    {
+      "layout": "cover",
+      "image": "photos/vine-street.jpg",
+      "kicker": "Central Valley buyers",
+      "headline": "The fixer everyone scrolls past could be your best buy"
+    },
+    {
+      "layout": "point",
+      "stat": "3",
+      "headline": "things to check before you write off a fixer",
+      "body": "Look past the peeling paint and the overgrown yard. The roof, the foundation, and the floor plan are what matter. Cosmetic work is cheap next to structural surprises, and a good inspection tells you which one you're looking at."
+    },
+    {
+      "layout": "point",
+      "headline": "Price the repairs before you price the offer.",
+      "body": "Get real numbers from a contractor before you negotiate. Knowing the repair cost turns a scary listing into a clear math problem, and it gives you leverage at the table."
+    },
+    {
+      "layout": "before-after",
+      "before": "photos/project-exterior-before.jpg",
+      "after": "photos/project-exterior-after.jpg",
+      "headline": "Same house. A completely different first impression."
+    },
+    {
+      "layout": "cta",
+      "headline": "Want a second set of eyes on a fixer?",
+      "body": "We look at a house the way a buyer and a builder would.",
+      "action": "Book a free consult",
+      "url": "teamjafri.com"
+    }
+  ]
+}
