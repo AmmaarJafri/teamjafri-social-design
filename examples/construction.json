@@ -1,12 +1,14 @@
 {
   "lane": "construction",
-  "footer": { "cslb": "0000000" },
+  "footer": {
+    "cslb": "0000000"
+  },
   "slides": [
     {
       "layout": "cover",
-      "image": "photos/project-kitchen-refresh.jpg",
+      "image": "photos/remodel-after.jpg",
       "kicker": "Remodels · ADUs",
-      "headline": "Your kitchen might not need a gut job"
+      "headline": "This house had plywood for windows"
     },
     {
       "layout": "point",
@@ -21,9 +23,9 @@
     },
     {
       "layout": "before-after",
-      "before": "photos/project-exterior-before.jpg",
-      "after": "photos/project-exterior-after.jpg",
-      "headline": "Fresh paint, sharp trim, and a porch worth walking up to.",
+      "before": "photos/remodel-before.jpg",
+      "after": "photos/remodel-after.jpg",
+      "headline": "Boarded up to move-in ready.",
       "beforeLabel": "Before",
       "afterLabel": "After"
     },
