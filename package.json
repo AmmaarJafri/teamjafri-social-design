@@ -1,0 +1,16 @@
+{
+  "name": "teamjafri-social-design",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Team Jafri social carousel renderer: JSON spec in, on-brand 1080x1350 PNGs out.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "render": "node render.js",
+    "sample": "node render.js examples/real-estate.json --draft && node render.js examples/construction.json --draft",
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "playwright-core": "1.65.0"
+  }
+}
