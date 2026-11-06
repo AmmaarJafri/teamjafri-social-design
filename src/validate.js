@@ -145,6 +145,10 @@ export function validateSpec(specPath, { draft = false } = {}) {
   const footer = spec.footer && typeof spec.footer === 'object' && !Array.isArray(spec.footer) ? spec.footer : {};
   for (const field of LANE_FOOTER[lane] ?? []) {
     const v = footer[field];
+    if (typeof v === 'number' && field in LICENSE_FORMAT) {
+      err(3, `footer.${field} is a number (${v}); write it as a string in quotes, e.g. "${field === 'dre' ? '01234567' : '1047293'}", so leading zeros are kept`);
+      continue;
+    }
     if (!isNonEmptyString(v)) {
       err(3, `footer.${field} is ${v === undefined ? 'missing' : typeof v !== 'string' ? `not a string (${typeof v})` : 'empty'}; required for lane "${lane}"`);
       continue;
