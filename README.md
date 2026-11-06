@@ -1,6 +1,6 @@
 # teamjafri-social-design
 
-Turns one JSON spec into on-brand Team Jafri carousel PNGs (1080×1350, 4:5). Colors, fonts and logo come from teamjafri.com and are bundled in `assets/`. Nothing is fetched over the network at render time.
+Turns one JSON spec into on-brand Team Jafri carousel images (JPEG, 1080×1350, 4:5). Colors, fonts and logo come from teamjafri.com and are bundled in `assets/`. Nothing is fetched over the network at render time.
 
 Written for the agent that runs this unattended.
 
@@ -22,12 +22,15 @@ npm ci
 node render.js <spec.json> --out <dir>
 ```
 
-- **On success:** writes `<dir>/01.png`, `02.png`, … and prints each path, then `OK <n> slides -> <dir>`. Exit code 0.
-- **On failure:** prints every problem to stderr as `FAIL [<code> <CATEGORY>] <message>`, deletes `<dir>`, and exits non-zero. A failed run never leaves PNGs behind.
+- **On success:** writes `<dir>/01.jpg`, `02.jpg`, … and prints each path, then `OK <n> slides -> <dir>`. Exit code 0.
+- **Format:** JPEG at quality 90, sRGB colour, which is what Instagram's publishing API and TikTok require. Add `--png` only if you specifically need PNG files; it writes `01.png`, … instead.
+- **On failure:** prints every problem to stderr as `FAIL [<code> <CATEGORY>] <message>`, deletes `<dir>`, and exits non-zero. A failed run never leaves images behind.
 - **Default `--out`:** `out/<spec name>/`.
-- **`<dir>` must be new, empty, or contain only PNGs.** Anything else is refused with exit 2.
+- **`<dir>` must be new, empty, or contain only `.jpg`/`.png` files.** Anything else is refused with exit 2.
 
-**Never pass `--draft` for anything that will be posted.** `--draft` lets placeholder license numbers through, stamps "DRAFT — NOT FOR POSTING" across the top of every slide, and names the files `DRAFT-01.png`, …. It exists only for the samples.
+**License values never live in this repo.** Read the agent name, CalDRE # and CSLB # from the Brand Brief at render time and put them in the spec's `footer`.
+
+**Never pass `--draft` for anything that will be posted.** `--draft` lets placeholder license numbers through, stamps "DRAFT — NOT FOR POSTING" across the top of every slide, and names the files `DRAFT-01.jpg`, …. It exists only for the samples.
 
 To render the sample carousels (one per lane, all 4 layouts, in draft mode):
 
@@ -45,11 +48,11 @@ npm test
 
 | Code | Meaning | What to do |
 |---|---|---|
-| 0 | OK | Post the PNGs. |
+| 0 | OK | Post the images. |
 | 1 | Internal error | Don't post. Report the stack trace. |
 | 2 | Invalid spec: bad JSON, unknown lane/layout/field, missing text, unsupported character (emoji, newline), bad args | Fix the spec. |
 | 3 | License footer missing, empty, placeholder, or wrong format | Don't post. Get the real values from the Brand Brief. |
-| 4 | Image path missing, unreadable, or not .jpg/.jpeg/.png/.webp | Fix the path. |
+| 4 | Image path missing, unreadable, or not .jpg/.jpeg/.png/.webp; or a cover photo narrower than 1080 px (the message names the slide and the actual width) | Fix the path, or pick a larger photo. Never upscale the file to get past the check. |
 | 5 | Text overflows its box (the message names the slide and field) | Shorten that field. Never shrink fonts. |
 | 6 | Environment: Chrome missing or won't launch, a bundled font didn't load, network access attempted | Don't post. Report it. |
 
@@ -86,11 +89,11 @@ If several categories fail, the run exits with the code of the first one: 2, 3, 
 | `cta` | `headline`, `action` | `body`, `url` (default `teamjafri.com`) | headline about 12 words; body about 25 words; action about 34 characters |
 
 - **Characters:** text may use Latin letters, digits, normal punctuation, curly quotes, dashes, `·`, `€` and `™`. Emoji and line breaks are rejected (exit 2).
-- **Photos:** use real Team Jafri photos at least 1080 px wide. Smaller photos render but look soft.
+- **Photos:** use real Team Jafri photos. Cover photos must be at least 1080 px wide as displayed (phone-camera rotation is taken into account), or the run fails with exit 4. Before/after photos have no minimum, but smaller ones look soft.
 
-## TikTok note
+## Platform note
 
-1080×1350 posts as-is to Instagram and Facebook. TikTok photo posts are 9:16 (1080×1920), so these slides show there with bars above and below. TikTok and Buffer also take JPG rather than PNG (Buffer converts PNG automatically). No 9:16 output exists yet.
+1080×1350 JPEGs post as-is to Instagram and Facebook. TikTok photo posts are 9:16 (1080×1920), so these slides show there with bars above and below. No 9:16 output exists yet.
 
 ## Layout of this repo
 
