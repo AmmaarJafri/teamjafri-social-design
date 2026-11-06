@@ -79,7 +79,7 @@ body{position:relative;background:${bg || t.surface};color:${t.text};font-family
 .hdr{position:absolute;left:${M}px;right:${M}px;top:${TOP}px;height:110px;display:flex;align-items:flex-start;justify-content:space-between;z-index:5}
 .logo{display:block;width:auto}
 .counter{font-family:${SANS};font-weight:700;font-size:26px;line-height:1;letter-spacing:.12em;padding-top:8px;font-variant-numeric:tabular-nums;white-space:nowrap}
-.counter-sep{opacity:.55;margin:0 .35em}
+.counter-sep{opacity:.8;margin:0 .35em}
 .ftr{position:absolute;left:${M}px;right:${M}px;bottom:0;height:${FZ}px;border-top:1.5px solid;display:flex;align-items:center;z-index:5}
 .ftr-text{width:100%;height:40px;line-height:40px;font-size:26px;font-weight:600;letter-spacing:.01em;white-space:nowrap;overflow:hidden}
 .draft-band{position:absolute;left:0;right:0;top:0;height:${DB}px;z-index:100;display:flex;align-items:center;justify-content:center;

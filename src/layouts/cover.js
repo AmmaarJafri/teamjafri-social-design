@@ -15,7 +15,7 @@ export function renderCover(ctx) {
   const css = `
   .photo{position:absolute;inset:0;background-image:${cssUrl(ctx.asset(s.image))};background-size:cover;background-position:center}
   .scrim{position:absolute;inset:0;background:
-      linear-gradient(180deg, rgba(10,7,8,.70) 0px, rgba(10,7,8,.28) 200px, rgba(10,7,8,0) 340px),
+      linear-gradient(180deg, rgba(10,7,8,.85) 0px, rgba(10,7,8,.50) 200px, rgba(10,7,8,0) 360px),
       linear-gradient(0deg, rgba(10,7,8,.96) 0%, rgba(10,7,8,.90) 20%, rgba(10,7,8,.62) 42%, rgba(10,7,8,.18) 58%, rgba(10,7,8,0) 68%)}
   ${
     isCon

@@ -18,7 +18,7 @@ export function renderCta(ctx) {
   ${isCon ? blueprintSurfaceCss : ''}
   .content{position:absolute;left:${M}px;right:${M}px;top:150px;bottom:${FZ + 48}px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;z-index:3}
   .content>*{flex-shrink:0}
-  .big-logo{display:block;height:220px;width:auto;margin-bottom:60px}
+  .big-logo{display:block;height:160px;width:auto;margin-bottom:60px}
   .headline{width:100%;${textBox({ size: 80, lh: 1.08, lines: 3 })}font-family:${SERIF};font-weight:600;
     letter-spacing:-.01em;color:${t.text};text-wrap:balance}
   .body{width:100%;${textBox({ size: 36, lh: 1.4, lines: 3 })}margin-top:28px;font-weight:500;color:${t.textSoft};text-wrap:balance}
