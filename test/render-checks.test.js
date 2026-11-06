@@ -27,7 +27,7 @@ test('renderer flags network access, missing footer, broken fonts, broken images
   assert.ok(chrome.path, chrome.error);
   const slides = Object.keys(FAKE).map((layout) => ({ layout }));
   const workDir = tmpDir();
-  const { errors, pngs } = await renderSlides({
+  const { errors, images } = await renderSlides({
     lane: 'construction', footer: { cslb: '1047293' }, slides, draft: false, workDir, chromePath: chrome.path,
     renderSlideHtml: (ctx) => FAKE[ctx.slide.layout](ctx),
   });
@@ -39,6 +39,6 @@ test('renderer flags network access, missing footer, broken fonts, broken images
   has(/^6 slide 4 \(badfont\) font "Broken" .* did not load/);
   has(/^4 slide 5 \(badimg\) image did not load/);
   has(/^5 slide 6 \(wide\) field 'stat' overflows by \d+px wide/);
-  assert.equal(pngs.length, slides.length);
+  assert.equal(images.length, slides.length);
   fs.rmSync(workDir, { recursive: true, force: true });
 });

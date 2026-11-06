@@ -124,7 +124,7 @@ test('invalid JSON -> exit 2', () => {
   assert.match(r.stderr, /cannot read spec .*JSON/);
 });
 
-test('refuses to wipe an --out dir that holds non-PNG files', () => {
+test('refuses to wipe an --out dir that holds non-image files', () => {
   const { file, dir } = writeSpec(CON);
   const r = runCli([file, '--out', dir]); // dir contains spec.json
   assert.equal(r.code, 2);

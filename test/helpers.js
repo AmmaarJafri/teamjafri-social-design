@@ -51,3 +51,20 @@ export function pngSize(file) {
   if (b.toString('latin1', 1, 4) !== 'PNG' || b.toString('latin1', 12, 16) !== 'IHDR') throw new Error(`${file} is not a PNG`);
   return { width: b.readUInt32BE(16), height: b.readUInt32BE(20) };
 }
+
+// Width/height from the JPEG's SOF0/SOF2 frame header.
+export function jpegSize(file) {
+  const b = fs.readFileSync(file);
+  if (b[0] !== 0xff || b[1] !== 0xd8) throw new Error(`${file} is not a JPEG`);
+  for (let i = 2; i + 9 < b.length;) {
+    if (b[i] !== 0xff) throw new Error(`${file}: bad JPEG marker at ${i}`);
+    const marker = b[i + 1];
+    if (marker === 0xc0 || marker === 0xc2) return { width: b.readUInt16BE(i + 7), height: b.readUInt16BE(i + 5) };
+    i += 2 + b.readUInt16BE(i + 2);
+  }
+  throw new Error(`${file}: no JPEG frame header found`);
+}
+
+export function imageSize(file) {
+  return /\.jpe?g$/i.test(file) ? jpegSize(file) : pngSize(file);
+}
