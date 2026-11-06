@@ -3,7 +3,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { chromium } from 'playwright-core';
 import { runCli, writeSpec, seedStaleOut, imageSize, FIXTURES, tmpDir } from './helpers.js';
+import { findChrome, REPO_ROOT } from '../src/render.js';
+import { renderSlideHtml } from '../src/layouts/index.js';
+import { validateSpec } from '../src/validate.js';
 
 const LONG = Array.from({ length: 300 }, (_, i) => `word${i}`).join(' ');
 
@@ -27,6 +32,43 @@ test('happy path (construction) with default out dir = out/<spec name>/ under cw
   const r = runCli([path.join(FIXTURES, 'construction-valid.json')], { cwd });
   assert.equal(r.code, 0, r.stderr);
   assertImages(path.join(cwd, 'out', 'construction-valid'), ['01.jpg', '02.jpg']);
+});
+
+// The footer text exactly as Chrome lays it out on each slide of a spec.
+async function renderedFooters(specFile) {
+  const v = validateSpec(specFile);
+  assert.deepEqual(v.errors, []);
+  const browser = await chromium.launch({ executablePath: findChrome().path, args: ['--no-sandbox'] });
+  try {
+    const page = await browser.newPage();
+    const footers = [];
+    for (const [i, slide] of v.slides.entries()) {
+      const file = path.join(tmpDir(), 'slide.html');
+      fs.writeFileSync(file, renderSlideHtml({
+        lane: v.lane, footer: v.footer, slide, index: i + 1, total: v.slides.length, draft: false,
+        asset: (p) => pathToFileURL(p).href, repoRoot: REPO_ROOT,
+      }));
+      await page.goto(pathToFileURL(file).href);
+      footers.push(await page.locator('[data-fit="footer"]').innerText());
+    }
+    return footers;
+  } finally {
+    await browser.close();
+  }
+}
+
+test('leading-zero DRE number passes validation and renders with the zero intact', async () => {
+  const { file, out } = writeSpec('real-estate-valid.json', (s) => { s.footer.dre = '01928374'; });
+  const r = runCli([file, '--out', out]);
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(r.stderr, '', 'no warnings for a real-looking leading-zero DRE');
+  assertImages(out, ['01.jpg', '02.jpg', '03.jpg', '04.jpg']);
+  assert.deepEqual(await renderedFooters(file), Array(4).fill('Dana Whitfield · CalDRE #01928374 · Valley Oak Realty'));
+});
+
+test('construction footer is the licensed name and CSLB # from the spec, nothing hardcoded', async () => {
+  const { file } = writeSpec('construction-valid.json', (s) => { s.footer.licensedName = 'Okafor Construction Co'; });
+  assert.deepEqual(await renderedFooters(file), Array(2).fill('Okafor Construction Co · CSLB #1047293'));
 });
 
 test('--draft allows a placeholder footer (warning) and writes DRAFT-NN.jpg', () => {
