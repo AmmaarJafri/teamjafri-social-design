@@ -25,6 +25,7 @@ test('missing footer field (real-estate) -> exit 3', () => {
 
 test('missing footer field (construction) -> exit 3', () => {
   expectFail(CON, (s) => { delete s.footer.cslb; }, { code: 3, match: /FAIL \[3 FOOTER\] footer\.cslb is missing/ });
+  expectFail(CON, (s) => { delete s.footer.licensedName; }, { code: 3, match: /FAIL \[3 FOOTER\] footer\.licensedName is missing; required for lane "construction"/ });
 });
 
 test('empty footer field -> exit 3', () => {
@@ -33,16 +34,29 @@ test('empty footer field -> exit 3', () => {
 
 test('all missing footer fields are reported together', () => {
   expectFail(RE, (s) => { s.footer = {}; }, { code: 3, match: [/footer\.agentName/, /footer\.dre/, /footer\.brokerage/] });
+  expectFail(CON, (s) => { s.footer = {}; }, { code: 3, match: [/footer\.licensedName/, /footer\.cslb/] });
 });
 
 for (const [field, value] of [
   ['dre', '00000000'], ['dre', 'TBD'], ['dre', '12345678'], ['agentName', 'Agent Name'], ['agentName', '[Your Name]'],
   ['brokerage', 'Lorem Ipsum Realty'], ['brokerage', 'n/a'], ['agentName', 'XXXX'], ['brokerage', '{brokerage}'],
+  ['brokerage', 'BROKER NAME'],
 ]) {
   test(`placeholder footer ${field}=${JSON.stringify(value)} -> exit 3`, () => {
     expectFail(RE, (s) => { s.footer[field] = value; }, { code: 3, match: new RegExp(`FAIL \\[3 FOOTER\\] footer\\.${field} `) });
   });
 }
+
+for (const value of ['LICENSED NAME', 'TBD', '[licensed name]', 'Company Name LLC']) {
+  test(`placeholder construction licensedName=${JSON.stringify(value)} -> exit 3`, () => {
+    expectFail(CON, (s) => { s.footer.licensedName = value; }, { code: 3, match: /FAIL \[3 FOOTER\] footer\.licensedName / });
+  });
+}
+
+test('license numbers written as JSON numbers -> exit 3 telling you to quote them', () => {
+  expectFail(RE, (s) => { s.footer.dre = 1928374; }, { code: 3, match: /footer\.dre is a number \(1928374\); write it as a string in quotes/ });
+  expectFail(CON, (s) => { s.footer.cslb = 1047293; }, { code: 3, match: /footer\.cslb is a number \(1047293\); write it as a string in quotes/ });
+});
 
 test('placeholder construction cslb "1111111" -> exit 3', () => {
   expectFail(CON, (s) => { s.footer.cslb = '1111111'; }, { code: 3, match: /footer\.cslb "1111111" is a dummy number/ });
