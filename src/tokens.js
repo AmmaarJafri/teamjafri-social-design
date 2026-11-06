@@ -52,13 +52,13 @@ export const LANES = {
     accent: COLORS.signal, // large text / UI only on char
     accentDeep: COLORS.glow, // graphics only
     hairline: 'rgba(255, 255, 255, 0.16)',
-    logoFull: 'logo-full-dark.png', // white wordmark + red roofs, dark backgrounds
+    logoFull: 'logo-social-dark.png', // white wordmark + red roofs, no tagline (illegible on dark at slide size)
     dark: true,
   },
 };
 
 // The dark-background logo is the only one allowed over photos (always behind a scrim).
-export const PHOTO_LOGO = 'logo-full-dark.png';
+export const PHOTO_LOGO = 'logo-social-dark.png';
 
 // Bundled latin-subset woff2 files in assets/fonts.
 export const FONT_FACES = [
