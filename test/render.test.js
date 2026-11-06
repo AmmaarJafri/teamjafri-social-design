@@ -49,6 +49,18 @@ test('text overflow on cover AND point -> exit 5, both reported, no out dir', ()
   assert.equal(fs.existsSync(out), false);
 });
 
+test('cover photo narrower than 1080px -> exit 4 naming slide and actual width, no out dir', () => {
+  const { file, out } = writeSpec('construction-valid.json', (s) => {
+    s.slides[0].image = path.join(FIXTURES, '../../examples/photos/project-kitchen-refresh.jpg'); // 920px wide
+  });
+  seedStaleOut(out);
+  const r = runCli([file, '--out', out]);
+  assert.equal(r.code, 4, r.stderr);
+  assert.match(r.stderr, /FAIL \[4 IMAGE\] slide 1 \(cover\) image 'image' is 920px wide; cover photos must be at least 1080px wide: .*project-kitchen-refresh\.jpg/);
+  assert.equal(r.stdout, '');
+  assert.equal(fs.existsSync(out), false);
+});
+
 test('Chrome missing -> exit 6, no out dir', () => {
   const { file, out } = writeSpec('construction-valid.json');
   seedStaleOut(out);
