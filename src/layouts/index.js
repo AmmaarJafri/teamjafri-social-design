@@ -1,6 +1,7 @@
 // CONTRACT between layouts (src/layouts/, src/tokens.js) and the renderer (render.js, src/*.js).
-// This file is a STUB. The layouts owner replaces the body of renderSlideHtml; the exports,
-// their shapes, and the rules below must not change without updating both sides.
+// The exports, their shapes, and the rules below must not change without updating both sides.
+// Layout implementations live next to this file (cover.js, point.js, before-after.js, cta.js);
+// brand tokens live in src/tokens.js.
 //
 // Spec (one JSON file per carousel; image paths are relative to the spec file's directory):
 //   {
@@ -35,6 +36,11 @@
 //   3. Only the bundled fonts (assets/fonts) are used, via @font-face pointing at asset(...).
 //      No network URLs anywhere. body is exactly 1080x1350, margin 0.
 
+import { renderCover } from './cover.js';
+import { renderPoint } from './point.js';
+import { renderBeforeAfter } from './before-after.js';
+import { renderCta } from './cta.js';
+
 export const LAYOUTS = {
   cover:          { text: { required: ['headline'], optional: ['kicker'] }, images: ['image'] },
   point:          { text: { required: ['headline'], optional: ['stat', 'body'] }, images: [] },
@@ -42,16 +48,16 @@ export const LAYOUTS = {
   cta:            { text: { required: ['headline', 'action'], optional: ['body', 'url'] }, images: [] },
 };
 
+const RENDERERS = {
+  cover: renderCover,
+  point: renderPoint,
+  'before-after': renderBeforeAfter,
+  cta: renderCta,
+};
+
 export function renderSlideHtml(ctx) {
-  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const f = ctx.footer;
-  const footer = ctx.lane === 'real-estate' ? `${f.agentName} · CalDRE #${f.dre} · ${f.brokerage}` : `CSLB #${f.cslb}`;
-  return `<!doctype html><html><head><meta charset="utf-8"><style>
-    html,body{margin:0;width:1080px;height:1350px;background:#F7F4EF;font-family:sans-serif}
-    .h{position:absolute;left:80px;top:200px;width:920px;height:400px;overflow:hidden;font-size:80px}
-    .f{position:absolute;left:80px;bottom:40px;width:920px;height:40px;overflow:hidden;white-space:nowrap;font-size:26px}
-  </style></head><body>
-    <div class="h" data-fit="headline">${esc(ctx.slide.headline)}</div>
-    <div class="f" data-fit="footer">${esc(footer)}</div>
-  </body></html>`;
+  const render = RENDERERS[ctx.slide?.layout];
+  if (!render) throw new Error(`Unknown layout: ${ctx.slide?.layout}`);
+  if (ctx.lane !== 'real-estate' && ctx.lane !== 'construction') throw new Error(`Unknown lane: ${ctx.lane}`);
+  return render(ctx);
 }
