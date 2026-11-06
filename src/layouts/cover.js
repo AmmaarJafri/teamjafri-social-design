@@ -1,6 +1,6 @@
 // cover: full-bleed photo + scrim, optional kicker, big serif headline, dark logo. The scroll-stopper.
 import { CANVAS, COLORS, PHOTO_LOGO, SERIF } from '../tokens.js';
-import { cssUrl, esc, footer, header, laneTokens, page, textBox } from './shared.js';
+import { esc, footer, header, laneTokens, page, textBox } from './shared.js';
 
 export function renderCover(ctx) {
   const t = laneTokens(ctx);
@@ -13,7 +13,7 @@ export function renderCover(ctx) {
     : `color:#fff;background:${COLORS.red};border-radius:999px;box-shadow:0 16px 40px rgba(184,18,27,.35)`;
 
   const css = `
-  .photo{position:absolute;inset:0;background-image:${cssUrl(ctx.asset(s.image))};background-size:cover;background-position:center}
+  .photo{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:center}
   .scrim{position:absolute;inset:0;background:
       linear-gradient(180deg, rgba(10,7,8,.85) 0px, rgba(10,7,8,.50) 200px, rgba(10,7,8,0) 360px),
       linear-gradient(0deg, rgba(10,7,8,.96) 0%, rgba(10,7,8,.90) 20%, rgba(10,7,8,.62) 42%, rgba(10,7,8,.18) 58%, rgba(10,7,8,0) 68%)}
@@ -36,7 +36,7 @@ export function renderCover(ctx) {
 
   const kicker = s.kicker ? `<div class="kicker" data-fit="kicker">${esc(s.kicker)}</div>` : '';
   const body = `
-  <div class="photo" role="img" aria-label=""></div>
+  <img class="photo" data-image="image" alt="" src="${esc(ctx.asset(s.image))}">
   <div class="scrim"></div>
   ${isCon ? '<div class="grid"></div>' : ''}
   ${header(ctx, { logoFile: PHOTO_LOGO, logoHeight: 110, counterColor: 'rgba(255,255,255,.82)' })}

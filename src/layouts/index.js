@@ -13,6 +13,7 @@
 //
 // LAYOUTS[key] = { text: { required: [...], optional: [...] }, images: [...] }
 //   - every name in `images` is a required image-path field
+//   - optional minWidth: { <imageField>: px } = smallest allowed natural width of that photo
 //   - the renderer validates presence of required fields, rejects unknown fields,
 //     checks image files exist, and resolves image paths to absolute paths before calling us.
 //
@@ -35,6 +36,8 @@
 //   2. Every slide carries the lane's license footer (data-fit="footer").
 //   3. Only the bundled fonts (assets/fonts) are used, via @font-face pointing at asset(...).
 //      No network URLs anywhere. body is exactly 1080x1350, margin 0.
+//   4. Any image field listed in LAYOUTS[key].minWidth is drawn as <img data-image="<field>">.
+//      The renderer fails the run (exit 4) if that image's natural width is below the minimum.
 
 import { renderCover } from './cover.js';
 import { renderPoint } from './point.js';
@@ -42,7 +45,7 @@ import { renderBeforeAfter } from './before-after.js';
 import { renderCta } from './cta.js';
 
 export const LAYOUTS = {
-  cover:          { text: { required: ['headline'], optional: ['kicker'] }, images: ['image'] },
+  cover:          { text: { required: ['headline'], optional: ['kicker'] }, images: ['image'], minWidth: { image: 1080 } },
   point:          { text: { required: ['headline'], optional: ['stat', 'body'] }, images: [] },
   'before-after': { text: { required: ['headline'], optional: ['beforeLabel', 'afterLabel'] }, images: ['before', 'after'] },
   cta:            { text: { required: ['headline', 'action'], optional: ['body', 'url'] }, images: [] },

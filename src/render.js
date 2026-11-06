@@ -5,6 +5,7 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { chromium } from 'playwright-core';
+import { LAYOUTS } from './layouts/index.js';
 
 export const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const WIDTH = 1080;
@@ -55,7 +56,10 @@ async function inspectPage() {
   const brokenImgs = [...document.images]
     .filter((img) => !img.complete || img.naturalWidth === 0)
     .map((img) => img.getAttribute('src'));
-  return { faces, fit, brokenImgs };
+  // naturalWidth is after EXIF orientation, i.e. the width as the photo is actually shown.
+  const photos = [...document.querySelectorAll('img[data-image]')]
+    .map((img) => ({ field: img.getAttribute('data-image'), width: img.naturalWidth }));
+  return { faces, fit, brokenImgs, photos };
 }
 
 export async function renderSlides({ lane, footer, slides, draft, workDir, chromePath, renderSlideHtml }) {
@@ -97,7 +101,7 @@ export async function renderSlides({ lane, footer, slides, draft, workDir, chrom
       const htmlPath = path.join(workDir, `slide-${n}.html`);
       await fs.writeFile(htmlPath, html);
       await page.goto(pathToFileURL(htmlPath).href, { waitUntil: 'load' });
-      const { faces, fit, brokenImgs } = await page.evaluate(inspectPage);
+      const { faces, fit, brokenImgs, photos } = await page.evaluate(inspectPage);
 
       for (const f of faces.filter((x) => x.status !== 'loaded')) {
         errors.push({ code: 6, msg: `${label} font "${f.family}" ${f.weight} ${f.style} did not load (status: ${f.status})` });
@@ -106,6 +110,14 @@ export async function renderSlides({ lane, footer, slides, draft, workDir, chrom
         errors.push({ code: 6, msg: `${label} field '${f.name}' renders in ${f.font}, which is not a loaded bundled @font-face` });
       }
       for (const src of brokenImgs) errors.push({ code: 4, msg: `${label} image did not load: ${src}` });
+      for (const [field, min] of Object.entries(LAYOUTS[slide.layout]?.minWidth ?? {})) {
+        const photo = photos.find((p) => p.field === field);
+        if (!photo) {
+          errors.push({ code: 4, msg: `${label} can't measure image '${field}': layout has no img[data-image="${field}"]` });
+        } else if (photo.width > 0 && photo.width < min) {
+          errors.push({ code: 4, msg: `${label} image '${field}' is ${photo.width}px wide; ${slide.layout} photos must be at least ${min}px wide: ${slide[field]}` });
+        }
+      }
       if (!fit.some((f) => f.name === 'footer')) {
         errors.push({ code: 3, msg: `${label} has no [data-fit="footer"] element; the license footer must be on every slide` });
       }
