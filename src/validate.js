@@ -16,7 +16,7 @@ export const CATEGORY = {
 
 const LANE_FOOTER = {
   'real-estate': ['agentName', 'dre', 'brokerage'],
-  construction: ['cslb'],
+  construction: ['licensedName', 'cslb'],
 };
 const LICENSE_FORMAT = {
   dre: [/^\d{8}$/, 'exactly 8 digits'],
@@ -29,7 +29,7 @@ const ALLOWED_CHAR = /^[ -~ -ÿ‐-‧‰-›€™]$/u;
 
 // Word-bounded so real names like "Todorov" or "Sampson" don't trip it.
 const PLACEHOLDER_WORDS =
-  /\b(placeholder|tbd|todo|x{3,}|lorem|agent name|your name|name here|changeme|example|sample)\b|(^|[^a-z0-9])n\/a($|[^a-z0-9])/i;
+  /\b(placeholder|tbd|todo|x{3,}|lorem|agent name|broker name|brokerage name|licensed name|license name|company name|business name|your name|name here|changeme|example|sample)\b|(^|[^a-z0-9])n\/a($|[^a-z0-9])/i;
 const WRAPPED = /^\s*(\[[\s\S]*\]|\{[\s\S]*\}|<[\s\S]*>)\s*$/;
 
 export function unsupportedChars(s) {

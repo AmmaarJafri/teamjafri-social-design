@@ -7,7 +7,7 @@
 //   {
 //     "lane": "real-estate" | "construction",
 //     "footer": real-estate:  { "agentName": str, "dre": str, "brokerage": str }
-//               construction: { "cslb": str }
+//               construction: { "licensedName": str, "cslb": str }
 //     "slides": [ { "layout": <key of LAYOUTS>, ...fields } ]   // 1..10 slides
 //   }
 //

@@ -28,7 +28,7 @@ test('renderer flags network access, missing footer, broken fonts, broken images
   const slides = Object.keys(FAKE).map((layout) => ({ layout }));
   const workDir = tmpDir();
   const { errors, images } = await renderSlides({
-    lane: 'construction', footer: { cslb: '1047293' }, slides, draft: false, workDir, chromePath: chrome.path,
+    lane: 'construction', footer: { licensedName: 'Rivera Builders Inc', cslb: '1047293' }, slides, draft: false, workDir, chromePath: chrome.path,
     renderSlideHtml: (ctx) => FAKE[ctx.slide.layout](ctx),
   });
   const msgs = errors.map((e) => `${e.code} ${e.msg}`);

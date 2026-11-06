@@ -80,7 +80,8 @@ export const SERIF = "'Noto Serif', serif";
 export const DEFAULT_URL = 'teamjafri.com';
 export const DRAFT_TEXT = 'DRAFT — NOT FOR POSTING';
 
+// Every value comes from the spec (Grok reads them from the Brand Brief). License numbers are strings.
 export function footerText(lane, footer) {
   if (lane === 'real-estate') return `${footer.agentName} · CalDRE #${footer.dre} · ${footer.brokerage}`;
-  return `Team Jafri · CSLB #${footer.cslb}`;
+  return `${footer.licensedName} · CSLB #${footer.cslb}`;
 }
