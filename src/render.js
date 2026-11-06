@@ -1,5 +1,5 @@
 // Chrome side: turn validated slides into PNGs and check what actually rendered.
-// renderSlides() never throws for content problems; it returns { errors, pngs }.
+// renderSlides() never throws for content problems; it returns { errors, images }.
 import fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
@@ -62,15 +62,16 @@ async function inspectPage() {
   return { faces, fit, brokenImgs, photos };
 }
 
-export async function renderSlides({ lane, footer, slides, draft, workDir, chromePath, renderSlideHtml }) {
+// format: 'jpeg' (default; quality 90, sRGB; what Instagram's API and TikTok require) or 'png'.
+export async function renderSlides({ lane, footer, slides, draft, workDir, chromePath, renderSlideHtml, format = 'jpeg' }) {
   const errors = [];
-  const pngs = [];
+  const images = [];
   let label = 'page';
   let browser;
   try {
-    browser = await chromium.launch({ executablePath: chromePath, headless: true, args: ['--no-sandbox'] });
+    browser = await chromium.launch({ executablePath: chromePath, headless: true, args: ['--no-sandbox', '--force-color-profile=srgb'] });
   } catch (e) {
-    return { errors: [{ code: 6, msg: `could not launch Chrome at ${chromePath}: ${e.message.split('\n')[0]}` }], pngs };
+    return { errors: [{ code: 6, msg: `could not launch Chrome at ${chromePath}: ${e.message.split('\n')[0]}` }], images };
   }
   try {
     const context = await browser.newContext({ viewport: { width: WIDTH, height: HEIGHT }, deviceScaleFactor: 1 });
@@ -126,12 +127,15 @@ export async function renderSlides({ lane, footer, slides, draft, workDir, chrom
         errors.push({ code: 5, msg: `${label} field '${f.name}' overflows by ${parts.join(' / ')}` });
       }
 
-      const png = path.join(workDir, `${n}.png`);
-      await page.screenshot({ path: png, type: 'png', clip: { x: 0, y: 0, width: WIDTH, height: HEIGHT }, animations: 'disabled' });
-      pngs.push(png);
+      const file = path.join(workDir, `${n}.${format === 'png' ? 'png' : 'jpg'}`);
+      await page.screenshot({
+        path: file, type: format, ...(format === 'jpeg' && { quality: 90 }),
+        clip: { x: 0, y: 0, width: WIDTH, height: HEIGHT }, animations: 'disabled',
+      });
+      images.push(file);
     }
   } finally {
     await browser.close();
   }
-  return { errors, pngs };
+  return { errors, images };
 }

@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// node render.js <spec.json> [--out <dir>] [--draft]
+// node render.js <spec.json> [--out <dir>] [--draft] [--png]
 // Exit codes: 0 ok, 1 internal, 2 invalid spec/usage, 3 footer, 4 image, 5 text overflow, 6 environment.
-// No output on failure: PNGs land in <out> only if every slide passes; otherwise <out> is removed.
+// Output: 01.jpg, 02.jpg, ... (JPEG quality 90, sRGB); --png writes 01.png, ... instead.
+// No output on failure: images land in <out> only if every slide passes; otherwise <out> is removed.
 import fs from 'node:fs/promises';
 import { readdirSync, statSync } from 'node:fs';
 import os from 'node:os';
@@ -11,7 +12,7 @@ import { validateSpec, CATEGORY } from './src/validate.js';
 import { findChrome, renderSlides } from './src/render.js';
 import { renderSlideHtml } from './src/layouts/index.js';
 
-const USAGE = 'usage: node render.js <spec.json> [--out <dir>] [--draft]';
+const USAGE = 'usage: node render.js <spec.json> [--out <dir>] [--draft] [--png]';
 let outToClean = null; // set once we know the out dir is safe to delete
 
 const line = (kind, { code, msg }) => `${kind} [${code} ${CATEGORY[code]}] ${msg}`;
@@ -20,25 +21,25 @@ function exitCodeFor(errors, order) {
   return order.find((c) => errors.some((e) => e.code === c)) ?? errors[0].code;
 }
 
-// Only ever delete a directory that holds nothing but PNGs we could have written.
+// Only ever delete a directory that holds nothing but images we could have written.
 function outDirProblem(dir) {
   let stat;
   try { stat = statSync(dir); } catch { return null; }
   if (!stat.isDirectory()) return `--out ${dir} exists and is not a directory`;
   const other = readdirSync(dir, { withFileTypes: true })
-    .filter((e) => !(e.isFile() && /\.png$/i.test(e.name)) && e.name !== '.DS_Store');
+    .filter((e) => !(e.isFile() && /\.(png|jpe?g)$/i.test(e.name)) && e.name !== '.DS_Store');
   return other.length
-    ? `refusing to replace --out ${dir}: it contains non-PNG entries (${other.slice(0, 3).map((e) => e.name).join(', ')}). Use an empty or PNG-only directory.`
+    ? `refusing to replace --out ${dir}: it contains non-image entries (${other.slice(0, 3).map((e) => e.name).join(', ')}). Use an empty directory or one holding only .jpg/.png files.`
     : null;
 }
 
-async function publish(pngs, outDir, draft) {
+async function publish(images, outDir, draft) { // keeps each rendered file's extension (.jpg or .png)
   const staging = `${outDir}.tmp-${process.pid}`;
   await fs.rm(staging, { recursive: true, force: true });
   await fs.mkdir(staging, { recursive: true });
   const finals = [];
-  for (const [i, src] of pngs.entries()) {
-    const name = `${draft ? 'DRAFT-' : ''}${String(i + 1).padStart(2, '0')}.png`;
+  for (const [i, src] of images.entries()) {
+    const name = `${draft ? 'DRAFT-' : ''}${String(i + 1).padStart(2, '0')}${path.extname(src)}`;
     await fs.copyFile(src, path.join(staging, name)); // copy, not rename: tmpdir may be another filesystem
     finals.push(path.join(outDir, name));
   }
@@ -58,7 +59,11 @@ async function main() {
   try {
     ({ values, positionals } = parseArgs({
       allowPositionals: true,
-      options: { out: { type: 'string' }, draft: { type: 'boolean', default: false } },
+      options: {
+        out: { type: 'string' },
+        draft: { type: 'boolean', default: false },
+        png: { type: 'boolean', default: false },
+      },
     }));
     if (positionals.length !== 1) throw new Error(`expected exactly one spec file, got ${positionals.length}`);
   } catch (e) {
@@ -82,14 +87,15 @@ async function main() {
   if (chrome.error) return failWith([{ code: 6, msg: chrome.error }], [6]);
   const workDir = await fs.mkdtemp(path.join(os.tmpdir(), 'tj-render-'));
   try {
-    const { errors, pngs } = await renderSlides({
+    const { errors, images } = await renderSlides({
       lane: v.lane, footer: v.footer, slides: v.slides, draft, workDir, chromePath: chrome.path, renderSlideHtml,
+      format: values.png ? 'png' : 'jpeg',
     });
     // Environment problems (fonts, network) make the other measurements meaningless, so they win.
     if (errors.length) return failWith(errors, [6, 3, 4, 5]);
 
     // 3. Publish atomically-ish: replace the out dir only after every slide passed.
-    const finals = await publish(pngs, outDir, draft);
+    const finals = await publish(images, outDir, draft);
     for (const f of finals) console.log(f);
     console.log(`OK ${finals.length} slides -> ${outDir}`);
     return 0;
