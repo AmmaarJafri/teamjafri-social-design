@@ -1,0 +1,108 @@
+# teamjafri-social-design
+
+Turns one JSON spec into on-brand Team Jafri carousel PNGs (1080×1350, 4:5). Colors, fonts and logo come from teamjafri.com and are bundled in `assets/`. Nothing is fetched over the network at render time.
+
+Written for the agent that runs this unattended.
+
+## Requirements
+
+- Node ≥ 20
+- Google Chrome at `/usr/bin/google-chrome`. Set `CHROME_PATH` if it's somewhere else.
+- No root, no apt, no system fonts, no browser download.
+
+## Install (once per clone)
+
+```bash
+npm ci
+```
+
+## The one command
+
+```bash
+node render.js <spec.json> --out <dir>
+```
+
+- **On success:** writes `<dir>/01.png`, `02.png`, … and prints each path, then `OK <n> slides -> <dir>`. Exit code 0.
+- **On failure:** prints every problem to stderr as `FAIL [<code> <CATEGORY>] <message>`, deletes `<dir>`, and exits non-zero. A failed run never leaves PNGs behind.
+- **Default `--out`:** `out/<spec name>/`.
+- **`<dir>` must be new, empty, or contain only PNGs.** Anything else is refused with exit 2.
+
+**Never pass `--draft` for anything that will be posted.** `--draft` lets placeholder license numbers through, stamps "DRAFT — NOT FOR POSTING" across the top of every slide, and names the files `DRAFT-01.png`, …. It exists only for the samples.
+
+To render the sample carousels (one per lane, all 4 layouts, in draft mode):
+
+```bash
+npm run sample
+```
+
+To run the tests that prove every hard fail works:
+
+```bash
+npm test
+```
+
+## Exit codes
+
+| Code | Meaning | What to do |
+|---|---|---|
+| 0 | OK | Post the PNGs. |
+| 1 | Internal error | Don't post. Report the stack trace. |
+| 2 | Invalid spec: bad JSON, unknown lane/layout/field, missing text, unsupported character (emoji, newline), bad args | Fix the spec. |
+| 3 | License footer missing, empty, placeholder, or wrong format | Don't post. Get the real values from the Brand Brief. |
+| 4 | Image path missing, unreadable, or not .jpg/.jpeg/.png/.webp | Fix the path. |
+| 5 | Text overflows its box (the message names the slide and field) | Shorten that field. Never shrink fonts. |
+| 6 | Environment: Chrome missing or won't launch, a bundled font didn't load, network access attempted | Don't post. Report it. |
+
+If several categories fail, the run exits with the code of the first one: 2, 3, 4 during validation, then 6, 3, 4, 5 during rendering.
+
+## Spec format
+
+```json
+{
+  "lane": "real-estate",
+  "footer": { "agentName": "Asad Jafri", "dre": "01234567", "brokerage": "Simple Realty" },
+  "slides": [
+    { "layout": "cover", "image": "photos/house.jpg", "kicker": "Central Valley buyers", "headline": "..." },
+    { "layout": "point", "stat": "3", "headline": "...", "body": "..." },
+    { "layout": "before-after", "before": "photos/a.jpg", "after": "photos/b.jpg", "headline": "..." },
+    { "layout": "cta", "headline": "...", "body": "...", "action": "Book a free consult", "url": "teamjafri.com" }
+  ]
+}
+```
+
+- **`lane`:** `"real-estate"` or `"construction"`.
+- **`footer`:**
+  - Real estate: `agentName`, `dre` (exactly 8 digits), `brokerage`.
+  - Construction: `{ "cslb": "1234567" }` (6–7 digits).
+  - The footer appears on every slide.
+  - Placeholders fail with exit 3: TBD, TODO, XXX, "Agent Name", `[...]`, 00000000, 12345678, and similar.
+- **`slides`:** 1–10 slides. Image paths are relative to the spec file. Unknown fields are rejected.
+
+| Layout | Required | Optional | About how much fits |
+|---|---|---|---|
+| `cover` | `image`, `headline` | `kicker` | headline about 12 words; kicker about 30 characters |
+| `point` | `headline` | `stat`, `body` | stat about 6 characters (`$4,500` fits, `$125,000` doesn't); headline 3 lines with a stat, 4 without; body about 45 words |
+| `before-after` | `before`, `after`, `headline` | `beforeLabel`, `afterLabel` | headline about 55 characters |
+| `cta` | `headline`, `action` | `body`, `url` (default `teamjafri.com`) | headline about 12 words; body about 25 words; action about 34 characters |
+
+- **Characters:** text may use Latin letters, digits, normal punctuation, curly quotes, dashes, `·`, `€` and `™`. Emoji and line breaks are rejected (exit 2).
+- **Photos:** use real Team Jafri photos at least 1080 px wide. Smaller photos render but look soft.
+
+## TikTok note
+
+1080×1350 posts as-is to Instagram and Facebook. TikTok photo posts are 9:16 (1080×1920), so these slides show there with bars above and below. TikTok and Buffer also take JPG rather than PNG (Buffer converts PNG automatically). No 9:16 output exists yet.
+
+## Layout of this repo
+
+- `render.js`: the CLI.
+- `src/validate.js`: checks the spec before rendering.
+- `src/render.js`: drives Chrome and checks what actually rendered.
+- `src/tokens.js` and `src/layouts/`: brand tokens and the 4 layouts. `src/layouts/index.js` holds the contract between the layouts and the renderer.
+- `assets/`: bundled fonts (OFL) and logos.
+- `examples/`: the sample specs and photos.
+- `test/`: the tests.
+- `docker/` and `scripts/container-test.sh`: a fresh-clone, offline render test in a container that mirrors the Sunday machine (Debian 13, Node 20, system Chrome, non-root). Run it with:
+
+  ```bash
+  bash scripts/container-test.sh
+  ```
