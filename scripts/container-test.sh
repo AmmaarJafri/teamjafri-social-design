@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Fresh-clone, offline render test in a container that mirrors the Sunday machine.
 #   run 1 (network on):  git clone <committed HEAD of $SRC> && npm ci
-#   run 2 (--network none): npm run sample && npm test, PNGs copied to $OUT_HOST
+#   run 2 (--network none): npm run sample && npm test, images copied to $OUT_HOST
 # Env overrides: SRC (git repo to clone, default: this repo), OUT_HOST (default: ./out-container), IMAGE.
-# The repo goes in as a git bundle on stdin and PNGs come out as a tar on stdout, so nothing depends on
+# The repo goes in as a git bundle on stdin and images come out as a tar on stdout, so nothing depends on
 # which host paths the Docker VM can bind-mount (colima only shares $HOME; other paths mount as empty dirs).
 set -euo pipefail
 
@@ -58,5 +58,5 @@ docker run --rm --platform "$PLATFORM" --network none -v "$VOL:/workspace" "$IMA
 ' | tar -xf - -C "$OUT_HOST"
 echo "run 2: $((SECONDS - t))s"
 
-step "PASS in $((SECONDS - t0))s; PNGs:"
-find "$OUT_HOST" -name '*.png' | sort
+step "PASS in $((SECONDS - t0))s; images:"
+find "$OUT_HOST" \( -name '*.jpg' -o -name '*.png' \) | sort
