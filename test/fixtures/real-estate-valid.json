@@ -1,0 +1,10 @@
+{
+  "lane": "real-estate",
+  "footer": { "agentName": "Faisal Jafri", "dre": "01928374", "brokerage": "Jafri Realty Group" },
+  "slides": [
+    { "layout": "cover", "kicker": "Just listed", "headline": "Light-filled on Paradise Road", "image": "../../examples/photos/paradise-road.jpg" },
+    { "layout": "point", "stat": "3", "headline": "Room to grow", "body": "Open kitchen, big yard — and a 2-car garage." },
+    { "layout": "before-after", "headline": "Staged to sell", "beforeLabel": "Before", "afterLabel": "After", "before": "../../examples/photos/project-exterior-before.jpg", "after": "../../examples/photos/project-exterior-after.jpg" },
+    { "layout": "cta", "headline": "Tour it this weekend", "action": "DM us “TOUR”", "url": "teamjafri.com" }
+  ]
+}

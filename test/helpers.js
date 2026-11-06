@@ -1,0 +1,53 @@
+// Shared test helpers: run the CLI as a child process and build spec variants.
+import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { LAYOUTS } from '../src/layouts/index.js';
+
+export const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+export const FIXTURES = path.join(REPO, 'test', 'fixtures');
+
+export function tmpDir() {
+  return fs.mkdtempSync(path.join(os.tmpdir(), 'tj-test-'));
+}
+
+export function runCli(args, { cwd = tmpDir(), env = {} } = {}) {
+  const r = spawnSync(process.execPath, [path.join(REPO, 'render.js'), ...args], {
+    cwd, env: { ...process.env, ...env }, encoding: 'utf8', timeout: 180_000,
+  });
+  return { code: r.status, stdout: r.stdout, stderr: r.stderr, cwd };
+}
+
+export function loadFixture(name) {
+  return JSON.parse(fs.readFileSync(path.join(FIXTURES, name), 'utf8'));
+}
+
+// Write a (mutated) fixture into a temp dir. Image paths are made absolute so the copy still resolves.
+export function writeSpec(fixtureName, mutate = () => {}) {
+  const spec = loadFixture(fixtureName);
+  for (const slide of spec.slides) {
+    for (const field of LAYOUTS[slide.layout]?.images ?? []) {
+      if (typeof slide[field] === 'string') slide[field] = path.resolve(FIXTURES, slide[field]);
+    }
+  }
+  mutate(spec);
+  const dir = tmpDir();
+  const file = path.join(dir, 'spec.json');
+  fs.writeFileSync(file, JSON.stringify(spec, null, 2));
+  return { file, dir, out: path.join(dir, 'out') };
+}
+
+// An out dir pre-seeded with a stale PNG, so "out dir doesn't exist afterwards" proves deletion.
+export function seedStaleOut(out) {
+  fs.mkdirSync(out, { recursive: true });
+  fs.writeFileSync(path.join(out, '09.png'), 'stale');
+  return out;
+}
+
+export function pngSize(file) {
+  const b = fs.readFileSync(file);
+  if (b.toString('latin1', 1, 4) !== 'PNG' || b.toString('latin1', 12, 16) !== 'IHDR') throw new Error(`${file} is not a PNG`);
+  return { width: b.readUInt32BE(16), height: b.readUInt32BE(20) };
+}
