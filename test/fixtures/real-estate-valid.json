@@ -1,6 +1,6 @@
 {
   "lane": "real-estate",
-  "footer": { "agentName": "Faisal Jafri", "dre": "01928374", "brokerage": "Jafri Realty Group" },
+  "footer": { "agentName": "Dana Whitfield", "dre": "01928374", "brokerage": "Valley Oak Realty" },
   "slides": [
     { "layout": "cover", "kicker": "Just listed", "headline": "Light-filled on Paradise Road", "image": "../../examples/photos/paradise-road.jpg" },
     { "layout": "point", "stat": "3", "headline": "Room to grow", "body": "Open kitchen, big yard — and a 2-car garage." },

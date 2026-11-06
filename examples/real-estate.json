@@ -1,6 +1,6 @@
 {
   "lane": "real-estate",
-  "footer": { "agentName": "AGENT NAME", "dre": "00000000", "brokerage": "Simple Realty" },
+  "footer": { "agentName": "AGENT NAME", "dre": "00000000", "brokerage": "BROKER NAME" },
   "slides": [
     {
       "layout": "cover",
