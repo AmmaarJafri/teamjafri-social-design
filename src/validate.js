@@ -51,7 +51,8 @@ function describeChar(c) {
 function isDummyPhone(s) {
   const d = s.replace(/\D/g, '').replace(/^1(?=\d{10}$)/, '');
   if (d.length !== 10) return false;
-  return d.slice(0, 3) === '555' || d.slice(3, 6) === '555' || isDummyLicense(d);
+  const run = [...d].every((x, i) => i === 0 || Number(x) === (Number(d[i - 1]) + 1) % 10); // 1234567890
+  return d.slice(0, 3) === '555' || d.slice(3, 6) === '555' || run || isDummyLicense(d);
 }
 
 function isDummyLicense(s) {
