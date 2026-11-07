@@ -123,8 +123,8 @@ A flier is one image for one post: an offer or announcement with a call to actio
 |---|---|---|
 | `headline` | yes | 2 lines, about 35 characters (`Garage-to-ADU conversions in Tracy`) |
 | `subhead` | no | 2 lines, about 90 characters |
-| `bullets` | no; 2–4 items if given | one line each, about 40 characters |
-| `action` | yes | the button text, about 30 characters |
+| `bullets` | no; 2–4 items if given | one line each, about 50 characters |
+| `action` | yes | the button text, about 35 characters |
 | `url` | no (default `teamjafri.com`) | one line |
 | `image` | no | a real photo at least 1080 px wide |
 
