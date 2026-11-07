@@ -3,17 +3,21 @@
 // Layout implementations live next to this file (cover.js, point.js, before-after.js, cta.js);
 // brand tokens live in src/tokens.js.
 //
-// Spec (one JSON file per carousel; image paths are relative to the spec file's directory):
+// Spec (one JSON file per carousel or flier; image paths are relative to the spec file's directory):
 //   {
 //     "lane": "real-estate" | "construction",
 //     "footer": real-estate:  { "agentName": str, "dre": str, "brokerage": str }
 //               construction: { "licensedName": str, "cslb": str }
+//               + any extra fields a layout lists in `footer` (flier: "phone": str)
 //     "slides": [ { "layout": <key of LAYOUTS>, ...fields } ]   // 1..10 slides
 //   }
 //
 // LAYOUTS[key] = { text: { required: [...], optional: [...] }, images: [...] }
-//   - every name in `images` is a required image-path field
-//   - optional minWidth: { <imageField>: px } = smallest allowed natural width of that photo
+//   - every name in `images` is a required image-path field, unless also listed in `optionalImages`
+//   - optional minWidth: { <imageField>: px } = smallest allowed natural width of that photo (when present)
+//   - optional lists: { <field>: { min, max } } = an array of min..max non-empty strings
+//   - optional single: true = this layout must be the only slide in its spec
+//   - optional footer: [...] = extra footer fields this layout needs (validated like the lane footer, exit 3)
 //   - the renderer validates presence of required fields, rejects unknown fields,
 //     checks image files exist, and resolves image paths to absolute paths before calling us.
 //
@@ -29,26 +33,36 @@
 //   }
 //
 // Rules the renderer relies on:
-//   1. Every element showing spec text has data-fit="<fieldName>" (footer: data-fit="footer").
+//   1. Every element showing spec text has data-fit="<fieldName>" (footer: data-fit="footer";
+//      list items: data-fit="<field>[n]", 1-based).
 //      Each such element has a bounded box (fixed height or max-height) with overflow:hidden.
 //      Single-line elements use white-space:nowrap. The renderer fails the run if any
 //      [data-fit] element has scrollHeight > clientHeight + 1 or scrollWidth > clientWidth + 1.
 //   2. Every slide carries the lane's license footer (data-fit="footer").
 //   3. Only the bundled fonts (assets/fonts) are used, via @font-face pointing at asset(...).
 //      No network URLs anywhere. body is exactly 1080x1350, margin 0.
-//   4. Any image field listed in LAYOUTS[key].minWidth is drawn as <img data-image="<field>">.
+//   4. Any image field listed in LAYOUTS[key].minWidth is drawn as <img data-image="<field>"> when present.
 //      The renderer fails the run (exit 4) if that image's natural width is below the minimum.
 
 import { renderCover } from './cover.js';
 import { renderPoint } from './point.js';
 import { renderBeforeAfter } from './before-after.js';
 import { renderCta } from './cta.js';
+import { renderFlier } from './flier.js';
 
 export const LAYOUTS = {
   cover:          { text: { required: ['headline'], optional: ['kicker'] }, images: ['image'], minWidth: { image: 1080 } },
   point:          { text: { required: ['headline'], optional: ['stat', 'body'] }, images: [] },
   'before-after': { text: { required: ['headline'], optional: ['beforeLabel', 'afterLabel'] }, images: ['before', 'after'] },
   cta:            { text: { required: ['headline', 'action'], optional: ['body', 'url'] }, images: [] },
+  // One-image promo post: offer/announcement + CTA, phone and website. Always a spec of its own.
+  flier: {
+    text: { required: ['headline', 'action'], optional: ['subhead', 'url'] },
+    lists: { bullets: { min: 2, max: 4 } },
+    images: ['image'], optionalImages: ['image'], minWidth: { image: 1080 },
+    single: true,
+    footer: ['phone'],
+  },
 };
 
 const RENDERERS = {
@@ -56,6 +70,7 @@ const RENDERERS = {
   point: renderPoint,
   'before-after': renderBeforeAfter,
   cta: renderCta,
+  flier: renderFlier,
 };
 
 export function renderSlideHtml(ctx) {
