@@ -3,8 +3,12 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { LAYOUTS } from '../src/layouts/index.js';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import assert from 'node:assert/strict';
+import { chromium } from 'playwright-core';
+import { LAYOUTS, renderSlideHtml } from '../src/layouts/index.js';
+import { findChrome, REPO_ROOT } from '../src/render.js';
+import { validateSpec } from '../src/validate.js';
 
 export const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const FIXTURES = path.join(REPO, 'test', 'fixtures');
@@ -67,4 +71,27 @@ export function jpegSize(file) {
 
 export function imageSize(file) {
   return /\.jpe?g$/i.test(file) ? jpegSize(file) : pngSize(file);
+}
+
+// The text of `selector` (default: the license footer) exactly as Chrome lays it out on each slide of a spec.
+export async function renderedFooters(specFile, selector = '[data-fit="footer"]') {
+  const v = validateSpec(specFile);
+  assert.deepEqual(v.errors, []);
+  const browser = await chromium.launch({ executablePath: findChrome().path, args: ['--no-sandbox'] });
+  try {
+    const page = await browser.newPage();
+    const footers = [];
+    for (const [i, slide] of v.slides.entries()) {
+      const file = path.join(tmpDir(), 'slide.html');
+      fs.writeFileSync(file, renderSlideHtml({
+        lane: v.lane, footer: v.footer, slide, index: i + 1, total: v.slides.length, draft: false,
+        asset: (p) => pathToFileURL(p).href, repoRoot: REPO_ROOT,
+      }));
+      await page.goto(pathToFileURL(file).href);
+      footers.push(await page.locator(selector).innerText());
+    }
+    return footers;
+  } finally {
+    await browser.close();
+  }
 }
