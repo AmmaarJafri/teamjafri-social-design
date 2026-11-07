@@ -1,0 +1,14 @@
+{
+  "lane": "construction",
+  "footer": { "licensedName": "Rivera Builders Inc", "cslb": "1047293", "phone": "209-014-2753" },
+  "slides": [
+    {
+      "layout": "flier",
+      "image": "../../examples/photos/remodel-after.jpg",
+      "headline": "Garage conversions, done right",
+      "bullets": ["Permits handled", "Fixed-price quotes", "Licensed and insured"],
+      "action": "Book a walkthrough",
+      "url": "teamjafri.com"
+    }
+  ]
+}

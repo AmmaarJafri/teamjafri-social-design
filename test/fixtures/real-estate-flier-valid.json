@@ -1,0 +1,14 @@
+{
+  "lane": "real-estate",
+  "footer": { "agentName": "Dana Whitfield", "dre": "01928374", "brokerage": "Valley Oak Realty", "phone": "(209) 014-2753" },
+  "slides": [
+    {
+      "layout": "flier",
+      "image": "../../examples/photos/paradise-road.jpg",
+      "headline": "Open house this Saturday",
+      "subhead": "Light-filled three bedroom on Paradise Road.",
+      "bullets": ["Open kitchen and big yard", "Two-car garage"],
+      "action": "Save your spot"
+    }
+  ]
+}
