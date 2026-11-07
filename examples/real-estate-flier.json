@@ -1,0 +1,23 @@
+{
+  "lane": "real-estate",
+  "footer": {
+    "agentName": "AGENT NAME",
+    "dre": "00000000",
+    "brokerage": "BROKER NAME",
+    "phone": "(209) 555-0100"
+  },
+  "slides": [
+    {
+      "layout": "flier",
+      "headline": "Free home valuation this month",
+      "subhead": "Find out what your Central Valley home is worth today.",
+      "bullets": [
+        "Local sales from the last 90 days",
+        "Upgrades that add value, and ones that don't",
+        "No pressure to list"
+      ],
+      "action": "Request your valuation",
+      "url": "teamjafri.com"
+    }
+  ]
+}

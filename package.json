@@ -2,12 +2,12 @@
   "name": "teamjafri-social-design",
   "version": "0.1.0",
   "private": true,
-  "description": "Team Jafri social carousel renderer: JSON spec in, on-brand 1080x1350 PNGs out.",
+  "description": "Team Jafri social renderer: JSON spec in, on-brand 1080x1350 carousel slides or a single flier out.",
   "type": "module",
   "engines": { "node": ">=20" },
   "scripts": {
     "render": "node render.js",
-    "sample": "node render.js examples/real-estate.json --draft && node render.js examples/construction.json --draft",
+    "sample": "node render.js examples/real-estate.json --draft && node render.js examples/construction.json --draft && node render.js examples/real-estate-flier.json --draft && node render.js examples/construction-flier.json --draft",
     "test": "node --test test/"
   },
   "dependencies": {

@@ -1,0 +1,22 @@
+{
+  "lane": "construction",
+  "footer": {
+    "licensedName": "LICENSED NAME",
+    "cslb": "0000000",
+    "phone": "(209) 555-0100"
+  },
+  "slides": [
+    {
+      "layout": "flier",
+      "image": "photos/remodel-after.jpg",
+      "headline": "Garage-to-ADU conversions in Tracy",
+      "subhead": "Free on-site consultation. No obligation.",
+      "bullets": [
+        "Plans and permits handled for you",
+        "Fixed-price quote before work starts",
+        "Built to code, start to finish"
+      ],
+      "action": "Book your free consult"
+    }
+  ]
+}
