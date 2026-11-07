@@ -22,6 +22,12 @@ const LICENSE_FORMAT = {
   dre: [/^\d{8}$/, 'exactly 8 digits'],
   cslb: [/^\d{6,7}$/, '6-7 digits'],
 };
+// Footer fields with a fixed format. All must be JSON strings (a number loses leading zeros / formatting).
+const FOOTER_FORMAT = {
+  ...LICENSE_FORMAT,
+  phone: [/^(\+?1[ .-]?)?(\(\d{3}\) ?|\d{3}[ .-]?)\d{3}[ .-]?\d{4}$/, 'a US 10-digit number like (209) 555-0123 or 209-555-0123'],
+};
+const FORMAT_EXAMPLE = { dre: '01234567', cslb: '1047293', phone: '(209) 555-0123' };
 const IMAGE_EXT = /\.(jpe?g|png|webp)$/i;
 
 // Characters the bundled latin font subsets can draw.
@@ -41,6 +47,13 @@ function describeChar(c) {
   return `${JSON.stringify(c)} (U+${cp})`;
 }
 
+// 555 numbers are fictional; a repeated digit or a 1234... run is a stand-in.
+function isDummyPhone(s) {
+  const d = s.replace(/\D/g, '').replace(/^1(?=\d{10}$)/, '');
+  if (d.length !== 10) return false;
+  return d.slice(0, 3) === '555' || d.slice(3, 6) === '555' || isDummyLicense(d);
+}
+
 function isDummyLicense(s) {
   if (!/^\d{2,}$/.test(s)) return false;
   if (/^(\d)\1+$/.test(s)) return true; // 00000000, 1111111
@@ -52,6 +65,7 @@ export function placeholderReason(field, value) {
   if (m) return `contains placeholder text "${m[0].trim()}"`;
   if (WRAPPED.test(value)) return 'is wrapped in brackets like a template slot';
   if (field in LICENSE_FORMAT && isDummyLicense(value.trim())) return 'is a dummy number (repeated digit or 1234... run)';
+  if (field === 'phone' && isDummyPhone(value)) return 'is a dummy number (555, repeated digit or 1234... run)';
   return null;
 }
 
@@ -84,6 +98,7 @@ export function validateSpec(specPath, { draft = false } = {}) {
   if (!Array.isArray(slidesIn) || slidesIn.length < 1 || slidesIn.length > 10) {
     err(2, `slides must be an array of 1-10 slides, got ${Array.isArray(slidesIn) ? `${slidesIn.length} slides` : JSON.stringify(slidesIn)}`);
   }
+  const extraFooter = new Map(); // footer field -> layout that needs it
 
   const slides = [];
   for (const [i, slide] of (Array.isArray(slidesIn) ? slidesIn : []).entries()) {
@@ -99,7 +114,12 @@ export function validateSpec(specPath, { draft = false } = {}) {
     }
     const label = `slide ${n} (${layout})`;
     const def = LAYOUTS[layout];
-    const known = new Set(['layout', ...def.text.required, ...def.text.optional, ...def.images]);
+    if (def.single && slidesIn.length > 1) {
+      err(2, `${label}: a ${layout} must be the only slide in its spec (got ${slidesIn.length} slides); put it in a spec of its own`);
+    }
+    for (const field of def.footer ?? []) if (!extraFooter.has(field)) extraFooter.set(field, layout);
+    const lists = def.lists ?? {};
+    const known = new Set(['layout', ...def.text.required, ...def.text.optional, ...Object.keys(lists), ...def.images]);
     for (const key of Object.keys(slide)) {
       if (!known.has(key)) err(2, `${label} has unknown field '${key}' (allowed: ${[...known].join(', ')})`);
     }
@@ -117,11 +137,30 @@ export function validateSpec(specPath, { draft = false } = {}) {
         err(2, `${label} field '${field}' has unsupported character ${describeChar(c)}; the bundled fonts can't draw it`);
       }
     }
+    for (const [field, { min, max }] of Object.entries(lists)) {
+      const v = slide[field];
+      if (v === undefined) continue;
+      if (!Array.isArray(v) || v.length < min || v.length > max) {
+        err(2, `${label} field '${field}' must be a list of ${min}-${max} strings, got ${Array.isArray(v) ? `${v.length}` : typeof v}`);
+        continue;
+      }
+      for (const [j, item] of v.entries()) {
+        const name = `${field}[${j + 1}]`;
+        if (!isNonEmptyString(item)) {
+          err(2, `${label} field '${name}' must be non-empty text`);
+          continue;
+        }
+        for (const c of unsupportedChars(item)) {
+          err(2, `${label} field '${name}' has unsupported character ${describeChar(c)}; the bundled fonts can't draw it`);
+        }
+      }
+    }
 
     // --- images (exit 4; wrong type is a spec error) ---
     const resolved = { ...slide };
     for (const field of def.images) {
       const v = slide[field];
+      if (v === undefined && def.optionalImages?.includes(field)) continue;
       if (v === undefined || v === '') {
         err(4, `${label} is missing image field '${field}'`);
         continue;
@@ -143,14 +182,18 @@ export function validateSpec(specPath, { draft = false } = {}) {
 
   // --- footer (exit 3) ---
   const footer = spec.footer && typeof spec.footer === 'object' && !Array.isArray(spec.footer) ? spec.footer : {};
-  for (const field of LANE_FOOTER[lane] ?? []) {
+  const required = [
+    ...(LANE_FOOTER[lane] ?? []).map((f) => [f, `lane "${lane}"`]),
+    ...[...extraFooter].map(([f, layout]) => [f, `a ${layout}`]),
+  ];
+  for (const [field, neededBy] of required) {
     const v = footer[field];
-    if (typeof v === 'number' && field in LICENSE_FORMAT) {
-      err(3, `footer.${field} is a number (${v}); write it as a string in quotes, e.g. "${field === 'dre' ? '01234567' : '1047293'}", so leading zeros are kept`);
+    if (typeof v === 'number' && field in FOOTER_FORMAT) {
+      err(3, `footer.${field} is a number (${v}); write it as a string in quotes, e.g. "${FORMAT_EXAMPLE[field]}", so leading zeros are kept`);
       continue;
     }
     if (!isNonEmptyString(v)) {
-      err(3, `footer.${field} is ${v === undefined ? 'missing' : typeof v !== 'string' ? `not a string (${typeof v})` : 'empty'}; required for lane "${lane}"`);
+      err(3, `footer.${field} is ${v === undefined ? 'missing' : typeof v !== 'string' ? `not a string (${typeof v})` : 'empty'}; required for ${neededBy}`);
       continue;
     }
     for (const c of unsupportedChars(v)) {
@@ -161,8 +204,8 @@ export function validateSpec(specPath, { draft = false } = {}) {
     const reason = placeholderReason(field, v);
     if (reason) {
       soft(`footer.${field} ${JSON.stringify(v)} ${reason}`);
-    } else if (field in LICENSE_FORMAT && !LICENSE_FORMAT[field][0].test(v)) {
-      soft(`footer.${field} ${JSON.stringify(v)} has the wrong format: expected ${LICENSE_FORMAT[field][1]}`);
+    } else if (field in FOOTER_FORMAT && !FOOTER_FORMAT[field][0].test(v)) {
+      soft(`footer.${field} ${JSON.stringify(v)} has the wrong format: expected ${FOOTER_FORMAT[field][1]}`);
     }
   }
 

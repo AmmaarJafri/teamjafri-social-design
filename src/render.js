@@ -112,6 +112,7 @@ export async function renderSlides({ lane, footer, slides, draft, workDir, chrom
       }
       for (const src of brokenImgs) errors.push({ code: 4, msg: `${label} image did not load: ${src}` });
       for (const [field, min] of Object.entries(LAYOUTS[slide.layout]?.minWidth ?? {})) {
+        if (slide[field] === undefined) continue; // optional image left out
         const photo = photos.find((p) => p.field === field);
         if (!photo) {
           errors.push({ code: 4, msg: `${label} can't measure image '${field}': layout has no img[data-image="${field}"]` });
