@@ -1,6 +1,6 @@
 {
   "lane": "real-estate",
-  "footer": { "agentName": "AGENT NAME", "dre": "00000000", "brokerage": "BROKER NAME" },
+  "footer": { "agentName": "AGENT NAME", "dre": "00000000", "brokerage": "BROKER NAME", "phone": "(209) 555-0100" },
   "slides": [
     {
       "layout": "cover",
@@ -28,9 +28,7 @@
     {
       "layout": "cta",
       "headline": "Want a second set of eyes on a fixer?",
-      "body": "We look at a house the way a buyer and a builder would.",
-      "action": "Book a free consult",
-      "url": "teamjafri.com"
+      "body": "We look at a house the way a buyer and a builder would."
     }
   ]
 }

@@ -2,7 +2,8 @@
   "lane": "construction",
   "footer": {
     "licensedName": "LICENSED NAME",
-    "cslb": "0000000"
+    "cslb": "0000000",
+    "phone": "(209) 555-0100"
   },
   "slides": [
     {
@@ -33,8 +34,7 @@
     {
       "layout": "cta",
       "headline": "Planning a remodel or an ADU?",
-      "body": "Walk us through the space. We'll help you scope it before anyone swings a hammer.",
-      "action": "Book a project consult"
+      "body": "Walk us through the space. We'll help you scope it before anyone swings a hammer."
     }
   ]
 }
