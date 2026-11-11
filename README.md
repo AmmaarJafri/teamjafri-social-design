@@ -28,7 +28,7 @@ node render.js <spec.json> --out <dir>
 - **Default `--out`:** `out/<spec name>/`.
 - **`<dir>` must be new, empty, or contain only `.jpg`/`.png` files.** Anything else is refused with exit 2.
 
-**License values never live in this repo.** At render time, read them from the Brand Brief and put them in the spec's `footer`: the agent name, CalDRE # and broker name for real estate; the licensed name and CSLB # for construction. Nothing in the footer is hardcoded.
+**License values and the phone number never live in this repo.** At render time, read them from the Brand Brief and put them in the spec's `footer`: the agent name, CalDRE #, broker name and phone for real estate; the licensed name, CSLB # and phone for construction. Nothing in the footer or on the CTA button is hardcoded, so a new phone number is a one-line edit in the Brand Brief.
 
 **Never pass `--draft` for anything that will be posted.** `--draft` lets placeholder license numbers through, stamps "DRAFT — NOT FOR POSTING" across the top of every slide, and names the files `DRAFT-01.jpg`, …. It exists only for the samples.
 
@@ -51,32 +51,35 @@ npm test
 | 0 | OK | Post the images. |
 | 1 | Internal error | Don't post. Report the stack trace. |
 | 2 | Invalid spec: bad JSON, unknown lane/layout/field, missing text, unsupported character (emoji, newline), bad args | Fix the spec. |
-| 3 | License footer (or a flier's phone) missing, empty, placeholder, wrong format, or written as a JSON number instead of a quoted string | Don't post. Get the real values from the Brand Brief. |
+| 3 | License footer or phone missing, empty, placeholder, wrong format, or written as a JSON number instead of a quoted string; or a slide rendered without the phone in its footer | Don't post. Get the real values from the Brand Brief. |
 | 4 | Image path missing, unreadable, or not .jpg/.jpeg/.png/.webp; or a cover or flier photo narrower than 1080 px (the message names the slide and the actual width) | Fix the path, or pick a larger photo. Never upscale the file to get past the check. |
 | 5 | Text overflows its box (the message names the slide and field) | Shorten that field. Never shrink fonts. |
 | 6 | Environment: Chrome missing or won't launch, a bundled font didn't load, network access attempted | Don't post. Report it. |
 
 If several categories fail, the run exits with the code of the first one: 2, 3, 4 during validation, then 6, 3, 4, 5 during rendering.
 
+A `WARNING` line never changes the exit code. Besides `--draft` placeholders, the only warning is for a CTA slide that still sends `action` or `url`; remove those fields.
+
 ## Spec format
 
 ```json
 {
   "lane": "real-estate",
-  "footer": { "agentName": "Dana Whitfield", "dre": "01928374", "brokerage": "Valley Oak Realty" },
+  "footer": { "agentName": "Dana Whitfield", "dre": "01928374", "brokerage": "Valley Oak Realty", "phone": "(209) 014-2753" },
   "slides": [
     { "layout": "cover", "image": "photos/house.jpg", "kicker": "Central Valley buyers", "headline": "..." },
     { "layout": "point", "stat": "3", "headline": "...", "body": "..." },
     { "layout": "before-after", "before": "photos/a.jpg", "after": "photos/b.jpg", "headline": "..." },
-    { "layout": "cta", "headline": "...", "body": "...", "action": "Book a free consult", "url": "teamjafri.com" }
+    { "layout": "cta", "headline": "...", "body": "..." }
   ]
 }
 ```
 
 - **`lane`:** `"real-estate"` or `"construction"`.
-- **`footer`:** every field is required and appears on every slide exactly as written.
-  - Real estate: `agentName`, `dre` (exactly 8 digits), `brokerage` (the broker name). Renders as `<agentName> · CalDRE #<dre> · <brokerage>`.
-  - Construction: `licensedName` (the name on the CSLB license), `cslb` (6–7 digits). Renders as `<licensedName> · CSLB #<cslb>`.
+- **`footer`:** every field is required and appears on every slide exactly as written. The license text is on the left of the footer line and the phone is on the right, both at 26 px. If they don't fit together, the run fails with exit 5; nothing is shrunk.
+  - Real estate: `agentName`, `dre` (exactly 8 digits), `brokerage` (the broker name), `phone`. Renders as `<agentName> · CalDRE #<dre> · <brokerage>` plus `<phone>`.
+  - Construction: `licensedName` (the name on the CSLB license), `cslb` (6–7 digits), `phone`. Renders as `<licensedName> · CSLB #<cslb>` plus `<phone>`.
+  - **`phone`:** a quoted string in US format, such as `"(209) 555-0123"` or `"209-555-0123"`, rendered exactly as written. It also builds the CTA button. Missing, empty, a JSON number, the wrong format, or a placeholder (any 555 number, a repeated digit, `1234567890`, `XXX`, `[...]`) fails with exit 3. The renderer also fails any slide whose footer doesn't show it.
   - **License numbers are strings in quotes:** `"dre": "01928374"`, never `"dre": 1928374`. The real DRE number starts with 0, and a JSON number would drop it, so a number fails with exit 3.
   - Placeholders fail with exit 3: TBD, TODO, XXX, "Agent Name", "Broker Name", "Licensed Name", `[...]`, 00000000, 12345678, and similar.
 - **`slides`:** 1–10 slides. Image paths are relative to the spec file. Unknown fields are rejected.
@@ -86,8 +89,9 @@ If several categories fail, the run exits with the code of the first one: 2, 3, 
 | `cover` | `image`, `headline` | `kicker` | headline about 12 words; kicker about 30 characters |
 | `point` | `headline` | `stat`, `body` | stat about 6 characters (`$4,500` fits, `$125,000` doesn't); headline 3 lines with a stat, 4 without; body about 45 words |
 | `before-after` | `before`, `after`, `headline` | `beforeLabel`, `afterLabel` | headline about 55 characters |
-| `cta` | `headline`, `action` | `body`, `url` (default `teamjafri.com`) | headline about 12 words; body about 25 words; action about 34 characters |
+| `cta` | `headline` | `body` | headline about 12 words; body about 25 words |
 
+- **CTA slide:** the button always reads `Call or text <footer.phone>`, with `Or send us a DM` under it. Don't send `action` or `url` on a `cta` slide; if you do, the slide still renders, they are ignored, and a `WARNING` names them.
 - **Characters:** text may use Latin letters, digits, normal punctuation, curly quotes, dashes, `·`, `€` and `™`. Emoji and line breaks are rejected (exit 2).
 - **Photos:** use real Team Jafri photos. Cover photos must be at least 1080 px wide as displayed (phone-camera rotation is taken into account), or the run fails with exit 4. Before/after photos have no minimum, but smaller ones look soft.
 
@@ -114,9 +118,7 @@ A flier is one image for one post: an offer or announcement with a call to actio
 ```
 
 - **One flier per spec.** A flier must be the only slide (exit 2 otherwise). It writes a single `01.jpg`.
-- **`footer`:** the lane's footer fields exactly as for carousels (same text at the bottom), **plus `phone`**, which is required for a flier.
-  - Read the phone number from the Brand Brief, like the license values. Write it as a quoted string in US format, such as `"(209) 555-0123"` or `"209-555-0123"`. It renders exactly as written.
-  - Missing, empty, a JSON number, the wrong format, or a placeholder fails with exit 3. Placeholders include any 555 number, a repeated digit, `1234567890`, `XXX`, and `[...]`. Under `--draft` a placeholder is only a warning.
+- **`footer`:** exactly the same fields as for carousels, `phone` included. The flier shows the phone large next to the website and again in the footer.
 - **`image` is optional.** With a photo, it fills the top of the flier and must be at least 1080 px wide (exit 4 otherwise). Without one, the top shows the brand background and a large logo.
 
 | Field | Required | About how much fits |
