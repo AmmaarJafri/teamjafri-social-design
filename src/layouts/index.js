@@ -6,9 +6,8 @@
 // Spec (one JSON file per carousel or flier; image paths are relative to the spec file's directory):
 //   {
 //     "lane": "real-estate" | "construction",
-//     "footer": real-estate:  { "agentName": str, "dre": str, "brokerage": str }
-//               construction: { "licensedName": str, "cslb": str }
-//               + any extra fields a layout lists in `footer` (flier: "phone": str)
+//     "footer": real-estate:  { "agentName": str, "dre": str, "brokerage": str, "phone": str }
+//               construction: { "licensedName": str, "cslb": str, "phone": str }
 //     "slides": [ { "layout": <key of LAYOUTS>, ...fields } ]   // 1..10 slides
 //   }
 //
@@ -17,7 +16,6 @@
 //   - optional minWidth: { <imageField>: px } = smallest allowed natural width of that photo (when present)
 //   - optional lists: { <field>: { min, max } } = an array of min..max non-empty strings
 //   - optional single: true = this layout must be the only slide in its spec
-//   - optional footer: [...] = extra footer fields this layout needs (validated like the lane footer, exit 3)
 //   - the renderer validates presence of required fields, rejects unknown fields,
 //     checks image files exist, and resolves image paths to absolute paths before calling us.
 //
@@ -38,7 +36,8 @@
 //      Each such element has a bounded box (fixed height or max-height) with overflow:hidden.
 //      Single-line elements use white-space:nowrap. The renderer fails the run if any
 //      [data-fit] element has scrollHeight > clientHeight + 1 or scrollWidth > clientWidth + 1.
-//   2. Every slide carries the lane's license footer (data-fit="footer").
+//   2. Every slide carries the lane's license footer (data-fit="footer"), and that element contains
+//      footer.phone. The renderer fails the slide (exit 3) if either is missing.
 //   3. Only the bundled fonts (assets/fonts) are used, via @font-face pointing at asset(...).
 //      No network URLs anywhere. body is exactly 1080x1350, margin 0.
 //   4. Any image field listed in LAYOUTS[key].minWidth is drawn as <img data-image="<field>"> when present.
@@ -61,7 +60,6 @@ export const LAYOUTS = {
     lists: { bullets: { min: 2, max: 4 } },
     images: ['image'], optionalImages: ['image'], minWidth: { image: 1080 },
     single: true,
-    footer: ['phone'],
   },
 };
 

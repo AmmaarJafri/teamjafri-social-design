@@ -59,7 +59,8 @@ async function inspectPage() {
   // naturalWidth is after EXIF orientation, i.e. the width as the photo is actually shown.
   const photos = [...document.querySelectorAll('img[data-image]')]
     .map((img) => ({ field: img.getAttribute('data-image'), width: img.naturalWidth }));
-  return { faces, fit, brokenImgs, photos };
+  const footerText = document.querySelector('[data-fit="footer"]')?.textContent ?? '';
+  return { faces, fit, brokenImgs, photos, footerText };
 }
 
 // format: 'jpeg' (default; quality 90, sRGB; what Instagram's API and TikTok require) or 'png'.
@@ -102,7 +103,7 @@ export async function renderSlides({ lane, footer, slides, draft, workDir, chrom
       const htmlPath = path.join(workDir, `slide-${n}.html`);
       await fs.writeFile(htmlPath, html);
       await page.goto(pathToFileURL(htmlPath).href, { waitUntil: 'load' });
-      const { faces, fit, brokenImgs, photos } = await page.evaluate(inspectPage);
+      const { faces, fit, brokenImgs, photos, footerText } = await page.evaluate(inspectPage);
 
       for (const f of faces.filter((x) => x.status !== 'loaded')) {
         errors.push({ code: 6, msg: `${label} font "${f.family}" ${f.weight} ${f.style} did not load (status: ${f.status})` });
@@ -122,6 +123,8 @@ export async function renderSlides({ lane, footer, slides, draft, workDir, chrom
       }
       if (!fit.some((f) => f.name === 'footer')) {
         errors.push({ code: 3, msg: `${label} has no [data-fit="footer"] element; the license footer must be on every slide` });
+      } else if (typeof footer.phone !== 'string' || footer.phone === '' || !footerText.includes(footer.phone)) {
+        errors.push({ code: 3, msg: `${label} footer does not show the phone number ${JSON.stringify(footer.phone)}; every slide's footer must` });
       }
       for (const f of fit.filter((x) => x.tall > 1 || x.wide > 1)) {
         const parts = [f.tall > 1 && `${f.tall}px tall`, f.wide > 1 && `${f.wide}px wide`].filter(Boolean);

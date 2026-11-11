@@ -50,10 +50,12 @@ export function header(ctx, { logoFile, logoHeight = 92, counterColor }) {
   return `<header class="hdr">${logo}${counter}</header>`;
 }
 
+// License text left, phone right, one line at the same size. The renderer fails a slide whose
+// [data-fit="footer"] doesn't contain footer.phone, and fails on overflow rather than shrinking anything.
 export function footer(ctx, { color, rule } = {}) {
   const t = laneTokens(ctx);
   return `<footer class="ftr" style="border-top-color:${rule || t.hairline}">
-    <div class="ftr-text" data-fit="footer" style="color:${color || t.muted}">${esc(footerText(ctx.lane, ctx.footer))}</div>
+    <div class="ftr-text" data-fit="footer" style="color:${color || t.muted}"><span class="ftr-license">${esc(footerText(ctx.lane, ctx.footer))}</span><span class="ftr-phone">${esc(ctx.footer.phone)}</span></div>
   </footer>`;
 }
 
@@ -81,7 +83,10 @@ body{position:relative;background:${bg || t.surface};color:${t.text};font-family
 .counter{font-family:${SANS};font-weight:700;font-size:26px;line-height:1;letter-spacing:.12em;padding-top:8px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .counter-sep{opacity:.8;margin:0 .35em}
 .ftr{position:absolute;left:${M}px;right:${M}px;bottom:0;height:${FZ}px;border-top:1.5px solid;display:flex;align-items:center;z-index:5}
-.ftr-text{width:100%;height:40px;line-height:40px;font-size:26px;font-weight:600;letter-spacing:.01em;white-space:nowrap;overflow:hidden}
+.ftr-text{width:100%;height:40px;line-height:40px;font-size:26px;font-weight:600;letter-spacing:.01em;white-space:nowrap;overflow:hidden;
+  display:flex;justify-content:space-between;gap:40px}
+.ftr-license,.ftr-phone{flex:0 0 auto}
+.ftr-phone{font-weight:700;font-variant-numeric:lining-nums}
 .draft-band{position:absolute;left:0;right:0;top:0;height:${DB}px;z-index:100;display:flex;align-items:center;justify-content:center;
   background:repeating-linear-gradient(-45deg, ${COLORS.red} 0 28px, ${COLORS.redDark} 28px 56px);
   color:#fff;font-family:${SANS};font-weight:800;font-size:28px;letter-spacing:.22em;text-transform:uppercase;white-space:nowrap;

@@ -14,9 +14,10 @@ export const CATEGORY = {
   6: 'ENVIRONMENT',
 };
 
+// Every spec, every layout: the lane's license fields plus the phone shown in every footer and on the CTA.
 const LANE_FOOTER = {
-  'real-estate': ['agentName', 'dre', 'brokerage'],
-  construction: ['licensedName', 'cslb'],
+  'real-estate': ['agentName', 'dre', 'brokerage', 'phone'],
+  construction: ['licensedName', 'cslb', 'phone'],
 };
 const LICENSE_FORMAT = {
   dre: [/^\d{8}$/, 'exactly 8 digits'],
@@ -99,7 +100,6 @@ export function validateSpec(specPath, { draft = false } = {}) {
   if (!Array.isArray(slidesIn) || slidesIn.length < 1 || slidesIn.length > 10) {
     err(2, `slides must be an array of 1-10 slides, got ${Array.isArray(slidesIn) ? `${slidesIn.length} slides` : JSON.stringify(slidesIn)}`);
   }
-  const extraFooter = new Map(); // footer field -> layout that needs it
 
   const slides = [];
   for (const [i, slide] of (Array.isArray(slidesIn) ? slidesIn : []).entries()) {
@@ -118,9 +118,13 @@ export function validateSpec(specPath, { draft = false } = {}) {
     if (def.single && slidesIn.length > 1) {
       err(2, `${label}: a ${layout} must be the only slide in its spec (got ${slidesIn.length} slides); put it in a spec of its own`);
     }
-    for (const field of def.footer ?? []) if (!extraFooter.has(field)) extraFooter.set(field, layout);
     const lists = def.lists ?? {};
-    const known = new Set(['layout', ...def.text.required, ...def.text.optional, ...Object.keys(lists), ...def.images]);
+    const ignored = def.ignored ?? {};
+    const known = new Set(['layout', ...def.text.required, ...def.text.optional, ...Object.keys(lists), ...def.images, ...Object.keys(ignored)]);
+    // Fields this layout no longer uses: render anyway, but say so, so the routine can drop them.
+    for (const [field, why] of Object.entries(ignored)) {
+      if (slide[field] !== undefined) warnings.push({ code: 2, msg: `${label} field '${field}' is ignored: ${why}. Remove it from the spec.` });
+    }
     for (const key of Object.keys(slide)) {
       if (!known.has(key)) err(2, `${label} has unknown field '${key}' (allowed: ${[...known].join(', ')})`);
     }
@@ -183,18 +187,14 @@ export function validateSpec(specPath, { draft = false } = {}) {
 
   // --- footer (exit 3) ---
   const footer = spec.footer && typeof spec.footer === 'object' && !Array.isArray(spec.footer) ? spec.footer : {};
-  const required = [
-    ...(LANE_FOOTER[lane] ?? []).map((f) => [f, `lane "${lane}"`]),
-    ...[...extraFooter].map(([f, layout]) => [f, `a ${layout}`]),
-  ];
-  for (const [field, neededBy] of required) {
+  for (const field of LANE_FOOTER[lane] ?? []) {
     const v = footer[field];
     if (typeof v === 'number' && field in FOOTER_FORMAT) {
       err(3, `footer.${field} is a number (${v}); write it as a string in quotes, e.g. "${FORMAT_EXAMPLE[field]}", so leading zeros are kept`);
       continue;
     }
     if (!isNonEmptyString(v)) {
-      err(3, `footer.${field} is ${v === undefined ? 'missing' : typeof v !== 'string' ? `not a string (${typeof v})` : 'empty'}; required for ${neededBy}`);
+      err(3, `footer.${field} is ${v === undefined ? 'missing' : typeof v !== 'string' ? `not a string (${typeof v})` : 'empty'}; required for lane "${lane}"`);
       continue;
     }
     for (const c of unsupportedChars(v)) {
