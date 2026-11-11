@@ -1,8 +1,8 @@
 {
   "lane": "construction",
-  "footer": { "licensedName": "Rivera Builders Inc", "cslb": "1047293" },
+  "footer": { "licensedName": "Rivera Builders Inc", "cslb": "1047293", "phone": "209-014-2753" },
   "slides": [
     { "layout": "cover", "headline": "Plywood windows to move-in ready", "image": "../../examples/photos/remodel-after.jpg" },
-    { "layout": "cta", "headline": "Planning a remodel?", "action": "Book a free walkthrough" }
+    { "layout": "cta", "headline": "Planning a remodel?" }
   ]
 }

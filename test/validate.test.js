@@ -101,9 +101,9 @@ test('unknown layout -> exit 2', () => {
 test('unknown slide field, missing required text, non-string text -> exit 2, all reported', () => {
   expectFail(CON, (s) => {
     s.slides[0].subtitle = 'x';
-    delete s.slides[1].action;
+    delete s.slides[1].headline;
     s.slides[0].headline = 42;
-  }, { code: 2, match: [/slide 1 \(cover\) has unknown field 'subtitle'/, /slide 2 \(cta\) is missing required text field 'action'/, /slide 1 \(cover\) field 'headline' must be a string/] });
+  }, { code: 2, match: [/slide 1 \(cover\) has unknown field 'subtitle'/, /slide 2 \(cta\) is missing required text field 'headline'/, /slide 1 \(cover\) field 'headline' must be a string/] });
 });
 
 test('bad lane / slide count -> exit 2', () => {

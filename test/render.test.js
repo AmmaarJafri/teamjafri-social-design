@@ -35,12 +35,12 @@ test('leading-zero DRE number passes validation and renders with the zero intact
   assert.equal(r.code, 0, r.stderr);
   assert.equal(r.stderr, '', 'no warnings for a real-looking leading-zero DRE');
   assertImages(out, ['01.jpg', '02.jpg', '03.jpg', '04.jpg']);
-  assert.deepEqual(await renderedFooters(file), Array(4).fill('Dana Whitfield · CalDRE #01928374 · Valley Oak Realty'));
+  assert.deepEqual(await renderedFooters(file, '.ftr-license'), Array(4).fill('Dana Whitfield · CalDRE #01928374 · Valley Oak Realty'));
 });
 
 test('construction footer is the licensed name and CSLB # from the spec, nothing hardcoded', async () => {
   const { file } = writeSpec('construction-valid.json', (s) => { s.footer.licensedName = 'Okafor Construction Co'; });
-  assert.deepEqual(await renderedFooters(file), Array(2).fill('Okafor Construction Co · CSLB #1047293'));
+  assert.deepEqual(await renderedFooters(file, '.ftr-license'), Array(2).fill('Okafor Construction Co · CSLB #1047293'));
 });
 
 test('--draft allows a placeholder footer (warning) and writes DRAFT-NN.jpg', () => {

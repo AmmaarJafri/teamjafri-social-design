@@ -55,8 +55,8 @@ test('flier photo path that does not exist -> exit 4', () => {
 });
 
 test('missing or empty phone -> exit 3 (both lanes, also under --draft)', () => {
-  expectFail(RE, (s) => { delete s.footer.phone; }, { code: 3, match: /FAIL \[3 FOOTER\] footer\.phone is missing; required for a flier/ });
-  expectFail(CON, (s) => { s.footer.phone = ' '; }, { code: 3, match: /footer\.phone is empty; required for a flier/ });
+  expectFail(RE, (s) => { delete s.footer.phone; }, { code: 3, match: /FAIL \[3 FOOTER\] footer\.phone is missing; required for lane "real-estate"/ });
+  expectFail(CON, (s) => { s.footer.phone = ' '; }, { code: 3, match: /footer\.phone is empty; required for lane "construction"/ });
   expectFail(CON, (s) => { delete s.footer.phone; }, { code: 3, args: ['--draft'], match: /footer\.phone is missing/ });
 });
 
@@ -84,10 +84,11 @@ test('--draft lets a placeholder phone through as a warning', () => {
 
 test('flier keeps the DRE leading zero, and shows the lane footer and phone exactly as written', async () => {
   const { file } = writeSpec(RE, (s) => { s.footer.dre = '01928374'; });
-  assert.deepEqual(await renderedFooters(file), ['Dana Whitfield · CalDRE #01928374 · Valley Oak Realty']);
+  assert.deepEqual(await renderedFooters(file, '.ftr-license'), ['Dana Whitfield · CalDRE #01928374 · Valley Oak Realty']);
+  assert.deepEqual(await renderedFooters(file, '.ftr-phone'), ['(209) 014-2753']);
   assert.deepEqual(await renderedFooters(file, '[data-fit="phone"]'), ['(209) 014-2753']);
   const con = writeSpec(CON);
-  assert.deepEqual(await renderedFooters(con.file), ['Rivera Builders Inc · CSLB #1047293']);
+  assert.deepEqual(await renderedFooters(con.file, '.ftr-license'), ['Rivera Builders Inc · CSLB #1047293']);
 });
 
 test('a flier must be the only slide in its spec -> exit 2', () => {

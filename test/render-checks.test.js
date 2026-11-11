@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 import { renderSlides, findChrome, REPO_ROOT } from '../src/render.js';
 import { tmpDir } from './helpers.js';
 
-const FOOTER = '<div data-fit="footer" style="height:40px;overflow:hidden">CSLB #1047293</div>';
+const FOOTER = '<div data-fit="footer" style="height:40px;overflow:hidden">CSLB #1047293 209-014-2753</div>';
 const page = (body, head = '') => `<!doctype html><html><head><meta charset="utf-8">${head}</head><body style="margin:0">${body}</body></html>`;
 const fontUrl = pathToFileURL(path.join(REPO_ROOT, 'assets/fonts/manrope-latin-700-normal.woff2')).href;
 
@@ -20,15 +20,16 @@ const FAKE = {
     '<style>@font-face{font-family:Broken;src:url(file:///nonexistent/font.woff2)}</style>'),
   badimg: () => page(`<img src="${pathToFileURL(path.join(REPO_ROOT, 'package.json')).href}">${FOOTER}`),
   wide: () => page(`<div data-fit="stat" style="width:100px;height:40px;overflow:hidden;white-space:nowrap">${'W'.repeat(80)}</div>${FOOTER}`),
+  nophone: () => page('<div data-fit="footer" style="height:40px;overflow:hidden">CSLB #1047293</div>'),
 };
 
-test('renderer flags network access, missing footer, broken fonts, broken images, horizontal overflow', async () => {
+test('renderer flags network access, missing footer, missing phone, broken fonts, broken images, horizontal overflow', async () => {
   const chrome = findChrome();
   assert.ok(chrome.path, chrome.error);
   const slides = Object.keys(FAKE).map((layout) => ({ layout }));
   const workDir = tmpDir();
   const { errors, images } = await renderSlides({
-    lane: 'construction', footer: { licensedName: 'Rivera Builders Inc', cslb: '1047293' }, slides, draft: false, workDir, chromePath: chrome.path,
+    lane: 'construction', footer: { licensedName: 'Rivera Builders Inc', cslb: '1047293', phone: '209-014-2753' }, slides, draft: false, workDir, chromePath: chrome.path,
     renderSlideHtml: (ctx) => FAKE[ctx.slide.layout](ctx),
   });
   const msgs = errors.map((e) => `${e.code} ${e.msg}`);
@@ -39,6 +40,7 @@ test('renderer flags network access, missing footer, broken fonts, broken images
   has(/^6 slide 4 \(badfont\) font "Broken" .* did not load/);
   has(/^4 slide 5 \(badimg\) image did not load/);
   has(/^5 slide 6 \(wide\) field 'stat' overflows by \d+px wide/);
+  has(/^3 slide 7 \(nophone\) footer does not show the phone number "209-014-2753"; every slide's footer must/);
   assert.equal(images.length, slides.length);
   fs.rmSync(workDir, { recursive: true, force: true });
 });
