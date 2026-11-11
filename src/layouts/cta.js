@@ -1,5 +1,6 @@
-// cta: prominent logo, serif headline, optional body, accent action button, url.
-import { CANVAS, DEFAULT_URL, SERIF } from '../tokens.js';
+// cta: prominent logo, serif headline, optional body, "Call or text <phone>" button, "Or send us a DM" line.
+// The button and the line are template copy; the phone comes from the spec's footer.phone.
+import { CANVAS, CTA_DM_LINE, SERIF, ctaButtonText } from '../tokens.js';
 import { arrowSvg, blueprintSurfaceCss, esc, footer, header, laneTokens, logoUrl, page, textBox } from './shared.js';
 
 export function renderCta(ctx) {
@@ -8,7 +9,6 @@ export function renderCta(ctx) {
   const s = ctx.slide;
   const isCon = ctx.lane === 'construction';
   const hasBody = s.body != null && s.body !== '';
-  const url = s.url ?? DEFAULT_URL;
 
   const btnShadow = isCon
     ? '0 0 0 1px rgba(255,143,154,.35), 0 20px 56px rgba(255,48,64,.40)'
@@ -25,7 +25,7 @@ export function renderCta(ctx) {
   .action{display:inline-flex;align-items:center;gap:18px;max-width:100%;height:108px;padding:0 52px;margin-top:56px;border-radius:12px;
     background:${t.accent};color:#fff;font-size:36px;font-weight:800;letter-spacing:.02em;white-space:nowrap;overflow:hidden;box-shadow:${btnShadow}}
   .action .arrow{flex:0 0 auto}
-  .url{width:100%;height:48px;line-height:48px;margin-top:36px;font-size:34px;font-weight:700;letter-spacing:.06em;color:${t.accent};
+  .dm{width:100%;height:48px;line-height:48px;margin-top:36px;font-size:34px;font-weight:700;letter-spacing:.02em;color:${t.accent};
     white-space:nowrap;overflow:hidden}
   `;
 
@@ -36,8 +36,8 @@ export function renderCta(ctx) {
     <img class="big-logo" alt="Team Jafri" src="${esc(logoUrl(ctx, t.logoFull))}">
     <h2 class="headline" data-fit="headline">${esc(s.headline)}</h2>
     ${hasBody ? `<p class="body" data-fit="body">${esc(s.body)}</p>` : ''}
-    <div class="action" data-fit="action"><span>${esc(s.action)}</span>${arrowSvg('#fff')}</div>
-    <div class="url" data-fit="url">${esc(url)}</div>
+    <div class="action" data-fit="cta-button"><span>${esc(ctaButtonText(ctx.footer.phone))}</span>${arrowSvg('#fff')}</div>
+    <div class="dm" data-fit="cta-line">${esc(CTA_DM_LINE)}</div>
   </main>
   ${footer(ctx)}`;
 

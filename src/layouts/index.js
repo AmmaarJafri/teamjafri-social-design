@@ -16,6 +16,7 @@
 //   - optional minWidth: { <imageField>: px } = smallest allowed natural width of that photo (when present)
 //   - optional lists: { <field>: { min, max } } = an array of min..max non-empty strings
 //   - optional single: true = this layout must be the only slide in its spec
+//   - optional ignored: { <field>: reason } = fields the layout no longer uses; accepted with a warning
 //   - the renderer validates presence of required fields, rejects unknown fields,
 //     checks image files exist, and resolves image paths to absolute paths before calling us.
 //
@@ -53,7 +54,13 @@ export const LAYOUTS = {
   cover:          { text: { required: ['headline'], optional: ['kicker'] }, images: ['image'], minWidth: { image: 1080 } },
   point:          { text: { required: ['headline'], optional: ['stat', 'body'] }, images: [] },
   'before-after': { text: { required: ['headline'], optional: ['beforeLabel', 'afterLabel'] }, images: ['before', 'after'] },
-  cta:            { text: { required: ['headline', 'action'], optional: ['body', 'url'] }, images: [] },
+  cta: {
+    text: { required: ['headline'], optional: ['body'] }, images: [],
+    ignored: {
+      action: 'the CTA button is always "Call or text <footer.phone>"',
+      url: 'the line under the CTA button is always "Or send us a DM"',
+    },
+  },
   // One-image promo post: offer/announcement + CTA, phone and website. Always a spec of its own.
   flier: {
     text: { required: ['headline', 'action'], optional: ['subhead', 'url'] },

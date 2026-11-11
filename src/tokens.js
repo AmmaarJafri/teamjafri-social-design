@@ -78,6 +78,9 @@ export const SANS = "'Manrope', sans-serif";
 export const SERIF = "'Noto Serif', serif";
 
 export const DEFAULT_URL = 'teamjafri.com';
+// CTA slide copy. The phone itself always comes from the spec's footer.phone (Brand Brief), never from here.
+export const ctaButtonText = (phone) => `Call or text ${phone}`;
+export const CTA_DM_LINE = 'Or send us a DM';
 export const DRAFT_TEXT = 'DRAFT — NOT FOR POSTING';
 
 // Every value comes from the spec (Grok reads them from the Brand Brief). License numbers are strings.
