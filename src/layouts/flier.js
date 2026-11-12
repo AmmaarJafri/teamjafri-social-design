@@ -1,9 +1,9 @@
 // flier: one-image promo post. Photo (or brand panel with a big logo) on top; headline, optional subhead,
-// optional 2-4 bullets, action button, phone + website below; the lane footer at the bottom.
+// optional 2-4 bullets, then the same call/DM block as the cta slide; the lane footer (with phone) at the bottom.
 // Every text box has a fixed maximum, and the maxima add up to less than the space below the top area's
 // 390px minimum, so too much text always fails as overflow (exit 5) instead of colliding.
-import { CANVAS, COLORS, DEFAULT_URL, PHOTO_LOGO, SERIF } from '../tokens.js';
-import { arrowSvg, blueprintSurfaceCss, esc, footer, header, laneTokens, lineBox, logoUrl, page, textBox } from './shared.js';
+import { CANVAS, COLORS, PHOTO_LOGO, SERIF } from '../tokens.js';
+import { blueprintSurfaceCss, callDmCss, callDmHtml, esc, footer, header, laneTokens, lineBox, logoUrl, page, textBox } from './shared.js';
 
 export function renderFlier(ctx) {
   const t = laneTokens(ctx);
@@ -12,11 +12,6 @@ export function renderFlier(ctx) {
   const isCon = ctx.lane === 'construction';
   const hasPhoto = s.image != null;
   const bullets = Array.isArray(s.bullets) ? s.bullets : [];
-  const url = s.url ?? DEFAULT_URL;
-
-  const btnShadow = isCon
-    ? '0 0 0 1px rgba(255,143,154,.35), 0 16px 44px rgba(255,48,64,.38)'
-    : '0 16px 40px rgba(184,18,27,.30)';
 
   const css = `
   ${isCon ? blueprintSurfaceCss : ''}
@@ -37,12 +32,8 @@ export function renderFlier(ctx) {
   .bullet{display:flex;align-items:center;gap:22px}
   .mark{flex:0 0 auto;width:14px;height:14px;background:${t.accent};${isCon ? 'box-shadow:0 0 12px rgba(255,48,64,.6);' : ''}}
   .bullet-text{flex:1 1 auto;min-width:0;${lineBox({ size: 34, line: 48 })}font-weight:600;color:${t.text}}
-  .action{display:inline-flex;align-items:center;gap:18px;max-width:100%;height:92px;padding:0 44px;margin-top:36px;border-radius:12px;
-    background:${t.accent};color:#fff;font-size:36px;font-weight:800;letter-spacing:.02em;white-space:nowrap;overflow:hidden;box-shadow:${btnShadow}}
-  .action .arrow{flex:0 0 auto}
-  .contact{display:flex;align-items:baseline;gap:36px;margin-top:20px;width:100%}
-  .phone{flex:0 0 auto;max-width:60%;${lineBox({ size: 48, line: 56 })}font-weight:800;letter-spacing:.01em;color:${t.text};font-variant-numeric:lining-nums}
-  .url{flex:1 1 auto;min-width:0;${lineBox({ size: 34, line: 56 })}font-weight:700;letter-spacing:.04em;color:${t.accent}}
+  ${callDmCss(ctx)}
+  .action{margin-top:36px}
   `;
 
   const top = hasPhoto
@@ -64,11 +55,7 @@ export function renderFlier(ctx) {
       <h1 class="headline" data-fit="headline">${esc(s.headline)}</h1>
       ${s.subhead ? `<p class="subhead" data-fit="subhead">${esc(s.subhead)}</p>` : ''}
       ${list}
-      <div class="action" data-fit="action"><span>${esc(s.action)}</span>${arrowSvg('#fff')}</div>
-      <div class="contact">
-        <div class="phone" data-fit="phone">${esc(ctx.footer.phone)}</div>
-        <div class="url" data-fit="url">${esc(url)}</div>
-      </div>
+      ${callDmHtml(ctx)}
     </main>
   </div>
   ${header(ctx, { logoFile: hasPhoto ? PHOTO_LOGO : null, logoHeight: 92 })}

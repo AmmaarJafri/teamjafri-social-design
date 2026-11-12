@@ -50,20 +50,21 @@ import { renderBeforeAfter } from './before-after.js';
 import { renderCta } from './cta.js';
 import { renderFlier } from './flier.js';
 
+// cta and flier both end in the call/DM block built from footer.phone; these old fields are accepted with a warning.
+const CALL_DM_REPLACES = {
+  action: 'the CTA button is always "Call or text <footer.phone>"',
+  url: 'the line under the CTA button is always "Or send us a DM"',
+};
+
 export const LAYOUTS = {
   cover:          { text: { required: ['headline'], optional: ['kicker'] }, images: ['image'], minWidth: { image: 1080 } },
   point:          { text: { required: ['headline'], optional: ['stat', 'body'] }, images: [] },
   'before-after': { text: { required: ['headline'], optional: ['beforeLabel', 'afterLabel'] }, images: ['before', 'after'] },
-  cta: {
-    text: { required: ['headline'], optional: ['body'] }, images: [],
-    ignored: {
-      action: 'the CTA button is always "Call or text <footer.phone>"',
-      url: 'the line under the CTA button is always "Or send us a DM"',
-    },
-  },
-  // One-image promo post: offer/announcement + CTA, phone and website. Always a spec of its own.
+  cta: { text: { required: ['headline'], optional: ['body'] }, images: [], ignored: CALL_DM_REPLACES },
+  // One-image promo post: offer/announcement + the call/DM block. Always a spec of its own.
   flier: {
-    text: { required: ['headline', 'action'], optional: ['subhead', 'url'] },
+    text: { required: ['headline'], optional: ['subhead'] },
+    ignored: CALL_DM_REPLACES,
     lists: { bullets: { min: 2, max: 4 } },
     images: ['image'], optionalImages: ['image'], minWidth: { image: 1080 },
     single: true,
