@@ -58,7 +58,7 @@ npm test
 
 If several categories fail, the run exits with the code of the first one: 2, 3, 4 during validation, then 6, 3, 4, 5 during rendering.
 
-A `WARNING` line never changes the exit code. Besides `--draft` placeholders, the only warning is for a CTA slide that still sends `action` or `url`; remove those fields.
+A `WARNING` line never changes the exit code. Besides `--draft` placeholders, the only warning is for a `cta` slide or a flier that still sends `action` or `url`; remove those fields.
 
 ## Spec format
 
@@ -97,7 +97,7 @@ A `WARNING` line never changes the exit code. Besides `--draft` placeholders, th
 
 ## Fliers (single image)
 
-A flier is one image for one post: an offer or announcement with a call to action, the phone number and the website. Use it for a single-image Page/IG post, or as the image for a Facebook group post. It uses the same lanes, footer, checks, exit codes and `--draft` as the carousels.
+A flier is one image for one post: an offer or announcement that ends in the same call/DM block as the carousel CTA slide. Use it for a single-image Page/IG post, or as the image for a Facebook group post. It uses the same lanes, footer, checks, exit codes and `--draft` as the carousels.
 
 ```json
 {
@@ -109,16 +109,15 @@ A flier is one image for one post: an offer or announcement with a call to actio
       "image": "photos/garage.jpg",
       "headline": "Garage-to-ADU conversions in Tracy",
       "subhead": "Free on-site consultation. No obligation.",
-      "bullets": ["Plans and permits handled for you", "Fixed-price quote before work starts", "Built to code, start to finish"],
-      "action": "Book your free consult",
-      "url": "teamjafri.com"
+      "bullets": ["Plans and permits handled for you", "Fixed-price quote before work starts", "Built to code, start to finish"]
     }
   ]
 }
 ```
 
 - **One flier per spec.** A flier must be the only slide (exit 2 otherwise). It writes a single `01.jpg`.
-- **`footer`:** exactly the same fields as for carousels, `phone` included. The flier shows the phone large next to the website and again in the footer.
+- **`footer`:** exactly the same fields as for carousels, `phone` included.
+- **Call to action:** the button always reads `Call or text <footer.phone>`, with `Or send us a DM` under it, the same as the carousel CTA slide. Don't send `action` or `url`; if you do, the flier still renders, they are ignored, and a `WARNING` names them.
 - **`image` is optional.** With a photo, it fills the top of the flier and must be at least 1080 px wide (exit 4 otherwise). Without one, the top shows the brand background and a large logo.
 
 | Field | Required | About how much fits |
@@ -126,11 +125,9 @@ A flier is one image for one post: an offer or announcement with a call to actio
 | `headline` | yes | 2 lines, about 35 characters (`Garage-to-ADU conversions in Tracy`) |
 | `subhead` | no | 2 lines, about 90 characters |
 | `bullets` | no; 2–4 items if given | one line each, about 50 characters |
-| `action` | yes | the button text, about 35 characters |
-| `url` | no (default `teamjafri.com`) | one line |
 | `image` | no | a real photo at least 1080 px wide |
 
-Too much text fails with exit 5 and names the field (`headline`, `bullets[2]`, `action`, …). Shorten that field; never shrink fonts. Every text on the flier is at least 34 px, except the license footer (26 px, the same as the carousels).
+Too much text fails with exit 5 and names the field (`headline`, `subhead`, `bullets[2]`, …). Shorten that field; never shrink fonts. Every text on the flier is at least 34 px, except the license footer (26 px, the same as the carousels).
 
 ## Platform note
 
