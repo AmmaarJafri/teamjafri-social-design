@@ -7,8 +7,10 @@
       "image": "../../examples/photos/paradise-road.jpg",
       "headline": "Open house this Saturday",
       "subhead": "Light-filled three bedroom on Paradise Road.",
-      "bullets": ["Open kitchen and big yard", "Two-car garage"],
-      "action": "Save your spot"
+      "bullets": [
+        "Open kitchen and big yard",
+        "Two-car garage"
+      ]
     }
   ]
 }

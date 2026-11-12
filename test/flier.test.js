@@ -86,7 +86,6 @@ test('flier keeps the DRE leading zero, and shows the lane footer and phone exac
   const { file } = writeSpec(RE, (s) => { s.footer.dre = '01928374'; });
   assert.deepEqual(await renderedFooters(file, '.ftr-license'), ['Dana Whitfield · CalDRE #01928374 · Valley Oak Realty']);
   assert.deepEqual(await renderedFooters(file, '.ftr-phone'), ['(209) 014-2753']);
-  assert.deepEqual(await renderedFooters(file, '[data-fit="phone"]'), ['(209) 014-2753']);
   const con = writeSpec(CON);
   assert.deepEqual(await renderedFooters(con.file, '.ftr-license'), ['Rivera Builders Inc · CSLB #1047293']);
 });
@@ -105,10 +104,26 @@ test('bullets must be a list of 2-4 non-empty strings -> exit 2', () => {
   expectFail(RE, (s) => { s.slides[0].bullets = ['Fine', 'Emoji 🏡']; }, { code: 2, match: /field 'bullets\[2\]' has unsupported character/ });
 });
 
-test('missing headline or action -> exit 2', () => {
-  expectFail(CON, (s) => { delete s.slides[0].headline; delete s.slides[0].action; }, {
-    code: 2, match: [/slide 1 \(flier\) is missing required text field 'headline'/, /missing required text field 'action'/],
-  });
+test('missing headline -> exit 2', () => {
+  expectFail(CON, (s) => { delete s.slides[0].headline; }, { code: 2, match: /slide 1 \(flier\) is missing required text field 'headline'/ });
+});
+
+test('flier ends in the same call/DM block as the CTA slide, built from footer.phone', async () => {
+  for (const [fixture, phone] of [[RE, '(209) 014-2753'], [CON, '209-014-2753']]) {
+    const { file } = writeSpec(fixture);
+    assert.deepEqual(await renderedFooters(file, '[data-fit="cta-button"]'), [`Call or text ${phone}`]);
+    assert.deepEqual(await renderedFooters(file, '[data-fit="cta-line"]'), ['Or send us a DM']);
+  }
+});
+
+test('flier that still sends action/url renders, warns, and ignores them', async () => {
+  const { file, out } = writeSpec(CON, (s) => { Object.assign(s.slides[0], { action: 'Book a walkthrough', url: 'teamjafri.com' }); });
+  const r = runCli([file, '--out', out]);
+  assert.equal(r.code, 0, r.stderr);
+  assert.match(r.stderr, /WARNING \[2 INVALID SPEC\] slide 1 \(flier\) field 'action' is ignored: the CTA button is always "Call or text <footer\.phone>"/);
+  assert.match(r.stderr, /WARNING \[2 INVALID SPEC\] slide 1 \(flier\) field 'url' is ignored: the line under the CTA button is always "Or send us a DM"/);
+  assert.deepEqual(fs.readdirSync(out), ['01.jpg']);
+  assert.deepEqual(await renderedFooters(file, '[data-fit="cta-button"]'), ['Call or text 209-014-2753']);
 });
 
 test('too much text -> exit 5 naming the field, never a squeezed layout', () => {
@@ -116,7 +131,7 @@ test('too much text -> exit 5 naming the field, never a squeezed layout', () => 
   expectFail(CON, (s) => { s.slides[0].bullets[1] = 'A bullet that goes on far too long to fit on one line of this flier, by a lot'; }, {
     code: 5, match: /field 'bullets\[2\]' overflows by \d+px wide/,
   });
-  expectFail(CON, (s) => { s.slides[0].action = 'Call us today to book a free on-site consultation and quote'; }, { code: 5, match: /field 'action' overflows/ });
+  expectFail(RE, (s) => { s.slides[0].subhead = LONG; }, { code: 5, match: /field 'subhead' overflows/ });
 });
 
 test('the largest allowed content still fits: 2-line headline, 2-line subhead, 4 bullets, photo', () => {
@@ -125,7 +140,6 @@ test('the largest allowed content still fits: 2-line headline, 2-line subhead, 4
       headline: 'Garage-to-ADU conversions in Tracy',
       subhead: 'Free on-site consultation and a written, fixed-price quote. No obligation, no pressure.',
       bullets: ['Plans and permits handled for you', 'Fixed-price quote before work starts', 'Built to code, start to finish', 'Licensed, bonded and insured'],
-      action: 'Book your free consult',
     });
   });
   expectOneImage(runCli([file, '--out', out]), out);
