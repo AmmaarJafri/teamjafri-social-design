@@ -2,7 +2,8 @@
 # Fresh-clone, offline render test in a container that mirrors the Sunday machine.
 #   run 1 (network on):  git clone <committed HEAD of $SRC> && npm ci
 #   run 2 (--network none): npm run sample && npm test, images copied to $OUT_HOST
-# Env overrides: SRC (git repo to clone, default: this repo), OUT_HOST (default: ./out-container), IMAGE.
+# Env overrides: SRC (git repo to clone, default: this repo), OUT_HOST (default: ./out-container), IMAGE,
+#   NODE_VERSION (default: the Dockerfile's, i.e. the Node 24 the Grok machine runs).
 # The repo goes in as a git bundle on stdin and images come out as a tar on stdout, so nothing depends on
 # which host paths the Docker VM can bind-mount (colima only shares $HOME; other paths mount as empty dirs).
 set -euo pipefail
@@ -10,7 +11,8 @@ set -euo pipefail
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SRC="$(cd "${SRC:-$REPO}" && pwd)"
 OUT_HOST="${OUT_HOST:-$REPO/out-container}"
-IMAGE="${IMAGE:-teamjafri-render-test}"
+NODE_VERSION="${NODE_VERSION:-}"
+IMAGE="${IMAGE:-teamjafri-render-test${NODE_VERSION:+-node$NODE_VERSION}}"
 VOL="teamjafri-ws-$(date +%s)-$$"
 PLATFORM=linux/amd64
 
@@ -26,7 +28,7 @@ step "source: $SRC @ $(git -C "$SRC" rev-parse --short HEAD) (committed HEAD onl
 
 step "build image $IMAGE"
 t=$SECONDS
-docker build --platform "$PLATFORM" -t "$IMAGE" "$REPO/docker"
+docker build --platform "$PLATFORM" ${NODE_VERSION:+--build-arg NODE_VERSION="$NODE_VERSION"} -t "$IMAGE" "$REPO/docker"
 echo "build: $((SECONDS - t))s"
 
 docker volume create "$VOL" >/dev/null

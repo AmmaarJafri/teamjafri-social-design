@@ -142,7 +142,7 @@ Too much text fails with exit 5 and names the field (`headline`, `subhead`, `bul
 - `assets/`: bundled fonts (OFL) and logos. Dark slides and photo covers use `logo-social-dark.png`, the site's dark logo without the "Building Dreams" tagline, which is unreadable on dark at slide size. Light slides keep `logo-full-light.png`.
 - `examples/`: the sample specs (`real-estate.json`, `construction.json`, `real-estate-flier.json`, `construction-flier.json`) and photos.
 - `test/`: the tests.
-- `docker/` and `scripts/container-test.sh`: a fresh-clone, offline render test in a container that mirrors the Sunday machine (Debian 13, Node 20, system Chrome, non-root). Run it with:
+- `docker/` and `scripts/container-test.sh`: a fresh-clone, offline render test in a container that mirrors the Sunday machine (Debian 13, Node 24, system Chrome, non-root). Run it with:
 
   ```bash
   bash scripts/container-test.sh

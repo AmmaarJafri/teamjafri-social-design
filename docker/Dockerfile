@@ -1,8 +1,9 @@
-# Mirrors the Sunday render machine: Debian 13 x86_64, Node 20.19, npm 11, system Google Chrome,
+# Mirrors the Sunday render machine: Debian 13 x86_64, Node 24, npm 11, system Google Chrome,
 # no extra fonts, non-root user. Root is used at BUILD time only; nothing at runtime needs it.
 FROM --platform=linux/amd64 debian:trixie-slim
 
-ARG NODE_VERSION=20.19.6
+# Node 24 is what the Grok machine runs. Override with NODE_VERSION=... bash scripts/container-test.sh.
+ARG NODE_VERSION=24.22.3
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends ca-certificates curl git xz-utils \

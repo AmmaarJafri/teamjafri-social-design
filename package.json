@@ -8,7 +8,7 @@
   "scripts": {
     "render": "node render.js",
     "sample": "node render.js examples/real-estate.json --draft && node render.js examples/construction.json --draft && node render.js examples/real-estate-flier.json --draft && node render.js examples/construction-flier.json --draft",
-    "test": "node --test test/"
+    "test": "node --test test/*.test.js"
   },
   "dependencies": {
     "playwright-core": "1.65.0"
