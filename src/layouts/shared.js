@@ -1,6 +1,6 @@
 // Shared building blocks for every layout: document shell, fonts, header, footer, draft band.
 import path from 'node:path';
-import { CANVAS, COLORS, DRAFT_TEXT, FONT_FACES, LANES, SANS, SERIF, footerText } from '../tokens.js';
+import { CANVAS, COLORS, CTA_DM_LINE, DRAFT_TEXT, FONT_FACES, LANES, SANS, SERIF, ctaButtonText, footerText } from '../tokens.js';
 
 export const esc = (s) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -38,6 +38,25 @@ export const blueprintSurfaceCss = `
 // Small right-arrow used in buttons (the latin font subset has no arrow glyph).
 export const arrowSvg = (color) =>
   `<svg class="arrow" viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path d="M4 12h15M13 5l7 7-7 7" fill="none" stroke="${color}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+// The call/DM block shared by the cta slide and the flier: a "Call or text <footer.phone>" button with
+// "Or send us a DM" under it. Layouts add their own spacing (e.g. .action{margin-top:...}) after this CSS.
+export function callDmCss(ctx) {
+  const t = laneTokens(ctx);
+  const btnShadow = ctx.lane === 'construction'
+    ? '0 0 0 1px rgba(255,143,154,.35), 0 20px 56px rgba(255,48,64,.40)'
+    : '0 20px 48px rgba(184,18,27,.32)';
+  return `
+  .action{display:inline-flex;align-items:center;gap:18px;max-width:100%;height:108px;padding:0 52px;border-radius:12px;
+    background:${t.accent};color:#fff;font-size:36px;font-weight:800;letter-spacing:.02em;white-space:nowrap;overflow:hidden;box-shadow:${btnShadow}}
+  .action .arrow{flex:0 0 auto}
+  .dm{width:100%;height:48px;line-height:48px;margin-top:36px;font-size:34px;font-weight:700;letter-spacing:.02em;color:${t.accent};
+    white-space:nowrap;overflow:hidden}`;
+}
+export function callDmHtml(ctx) {
+  return `<div class="action" data-fit="cta-button"><span>${esc(ctaButtonText(ctx.footer.phone))}</span>${arrowSvg('#fff')}</div>
+    <div class="dm" data-fit="cta-line">${esc(CTA_DM_LINE)}</div>`;
+}
 
 // Header row: logo (left) + slide counter (right). onPhoto = sits over a photo scrim.
 export function header(ctx, { logoFile, logoHeight = 92, counterColor }) {
