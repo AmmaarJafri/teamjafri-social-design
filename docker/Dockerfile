@@ -2,8 +2,8 @@
 # no extra fonts, non-root user. Root is used at BUILD time only; nothing at runtime needs it.
 FROM --platform=linux/amd64 debian:trixie-slim
 
-# Node 24 is what the Grok machine runs. Override with NODE_VERSION=... bash scripts/container-test.sh.
-ARG NODE_VERSION=24.22.3
+# Node 24.22.1 is exactly what the Grok machine runs. Override with NODE_VERSION=... bash scripts/container-test.sh.
+ARG NODE_VERSION=24.22.1
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends ca-certificates curl git xz-utils \
